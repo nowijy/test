@@ -24,7 +24,7 @@ function Home() {
                     <h1>Loading...</h1>
                 ) : (
                    <>
-                        <h1>Movie List, 수정을 시도합니다</h1>
+                        <h1>Movie List</h1>
                         <ul>
                             { movieList.map((movie) => (
                                 <Movie
