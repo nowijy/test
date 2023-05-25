@@ -1,1 +1,0 @@
-{"version":3,"file":"static/css/main.019b3f7c.css","mappings":"AAAA,GACI,YAAa,CACb,cACJ,CACA,GACI,YACJ,CACA,oBACI,qBACJ","sources":["scss/home.module.css"],"sourcesContent":["ul{\n    display: flex;\n    flex-wrap: wrap;\n}\nli{\n    flex: 0 0 20%;\n}\n.column{\n    flex-direction: column;\n}\n"],"names":[],"sourceRoot":""}
