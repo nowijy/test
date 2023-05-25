@@ -1,0 +1,23 @@
+﻿@font-face {
+    font-family: 'Gmarket Sans TTF';
+    font-style: normal;
+    font-weight: 400;
+    src: url(GmarketSansTTF/GmarketSansTTF-Light.woff) format('woff'),
+        url(GmarketSansTTF/GmarketSansTTF-Light.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'Gmarket Sans TTF';
+    font-style: normal;
+    font-weight: 500;
+    src: url(GmarketSansTTF/GmarketSansTTF-Medium.woff) format('woff'),
+        url(GmarketSansTTF/GmarketSansTTF-Medium.ttf) format('truetype');
+}
+
+@font-face {
+    font-family: 'Gmarket Sans TTF';
+    font-style: normal;
+    font-weight: 700;
+    src: url(GmarketSansTTF/GmarketSansTTF-Bold.woff) format('woff'),
+        url(GmarketSansTTF/GmarketSansTTF-Bold.ttf) format('truetype');
+}
