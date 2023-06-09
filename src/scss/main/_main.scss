@@ -6,6 +6,7 @@ $bgsamp: '../../images/sample/';
 #wrap{
     position: relative;
     min-height: 100vh;
+    max-height: 100vh;
     &::-webkit-scrollbar {
         display: none;
     }
@@ -55,6 +56,7 @@ $bgsamp: '../../images/sample/';
     }
 }
 
+/* main start */
 .main{
     .section{
         height: 100vh;
@@ -924,7 +926,9 @@ $bgsamp: '../../images/sample/';
         }
         
     }
-}
+} 
+/* main end */
+
 
 /* loading */
 $color: #5C8DF6;

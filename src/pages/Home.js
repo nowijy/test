@@ -20,16 +20,16 @@ function Home() {
     const [mainTotal, setMainTotal] = useState(0);
     const [mainToggle, setMainToggle] = useState(false);
     
-    
-    useLayoutEffect(() => {
-        window.scrollTo(0, 0);
-        document.body.style.overflow = 'hidden';
-    }, [])
     useEffect(() => {
+        window.onbeforeunload = function pushRefresh() {
+            window.scrollTo(0, 0);
+          };
+        document.body.style.overflow = 'hidden';
         setTimeout(() => {
             setLoading(false); // 로딩 완료
         }, 300)
     })
+    
     const [mainActive, setMainActive] = useState(0);
     const [pageActive, setPageActive] = useState(0);
     const [accumulate, setAccumulate] = useState(0);
@@ -46,6 +46,10 @@ function Home() {
         }
     }
     useEffect(() => {
+        /* if(window.scrollY !== 0) {
+            window.scrollTo(0, 0);
+        }  */
+
         let on = 'on';
         addClass('#wrap', 'slide_on');
         // .section > 바로안 자식요소 .on 전부 삭제 
@@ -73,11 +77,9 @@ function Home() {
         }
         
         const sections = Array.from(document.querySelectorAll('.section'));
-        window.addEventListener('load', function() {
-            const currentSection = document.querySelector('.section.current') || document.querySelectorAll('.section')[0].classList.add('current'); 
-            const currentIndex = sections.indexOf(currentSection);
-            setPageActive(currentIndex);
-        });
+        const currentSection = document.querySelector('.section.current') || document.querySelectorAll('.section')[0].classList.add('current'); 
+        const currentIndex = sections.indexOf(currentSection);
+        setPageActive(currentIndex);
 
         // handleScrollandKeyup
         const scrollDelay = 400; // 대기
@@ -167,6 +169,19 @@ function Home() {
         };
         window.addEventListener('resize', handleRezise);
         
+        // btn_top click event
+        document.querySelector('.fix .btn_top').addEventListener('click', function() {
+            const container = document.querySelector('#container');
+            container.style.transform = `translateY(-${0}px)`;
+            setAccumulate(0);
+            setPageActive(0);
+
+            for(var i = 0; document.querySelectorAll('.section').length > i; i++){
+                document.querySelectorAll('.section')[i].classList.remove('current');
+            }
+            document.querySelectorAll('.section')[0].classList.add('current');
+        })
+
         // main last 아닐경우 event 발동X
         if(mainActive === mainTotal) {
             window.addEventListener('wheel', handleScrollandKeyup);
@@ -177,6 +192,8 @@ function Home() {
             window.removeEventListener('keyup', handleScrollandKeyup);
             window.addEventListener('resize', handleRezise);
         }
+
+       
     }, [pageActive, mainActive, accumulate])
     
 
@@ -507,6 +524,48 @@ function Home() {
                 </section>
             </div>
             {/* -- container end */}
+
+            {/* fix start*/}
+            <div className="fix">
+                <div className="dim"></div>
+                {/* splash */}
+                <div className="splash">
+                    <div className="splash_hd">
+                        <p className="logo">ID.IM</p>
+                        <p className="menu"></p>
+                    </div>
+                    <div className="img_area">
+                        <div className="first_img"><img src="./images/sample/main_solution_preview_02.jpg" alt=""/></div>
+                        <div className="second_img">
+                            <ul>
+                                <li><img src="./images/sample/main_use_preview_01.jpg" alt=""/></li>
+                                <li><img src="./images/sample/main_use_preview_02.jpg" alt=""/></li>
+                                <li><img src="./images/sample/main_use_preview_03.jpg" alt=""/></li>
+                                <li><img src="./images/sample/main_use_preview_04.jpg" alt=""/></li>
+                                <li><img src="./images/sample/main_use_preview_05.jpg" alt=""/></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* sticky */}
+                <div className="sticky">
+                    {/* popup 요소 */}
+                    <div className="pop_wrap">
+                        <a href="#" className="btn_top">맨 위로 가기</a> 
+                        <div className="pop_inner">
+                            <i className="ico_logo">ID.IM</i>
+                            <div className="message">
+                                지금 ID.IM을 구독하면
+                                <span>30만원 상당의 DNA 검사가 무료!</span>
+                                <a href="#" className="ico_right">DNA 무료검사</a>
+                            </div>
+                            <a className="ico_close" href="#">닫기</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {/* fix end */}
         </>
     )
     /* -- home end */
