@@ -28,6 +28,10 @@ function Home() {
         setTimeout(() => {
             setLoading(false); // 로딩 완료
         }, 300)
+
+        return () => {
+            window.onbeforeunload = null;
+        };
     })
     
     const [mainActive, setMainActive] = useState(0);
