@@ -3,14 +3,16 @@ $bgsvg: '../../images/svg/';
 $bg: '../../images/common/';
 $bgsamp: '../../images/sample/';
 
-.body_scroll{
-    overflow: hidden;
-    #container{
-        transition: transform 1000ms ease;
+body{
+    
+}
+#wrap{
+    position: relative;
+    min-height: 100vh;
+    &::-webkit-scrollbar {
+        display: none;
     }
 }
-
-#root{position: relative;}
 
 #container.main{position: relative;}
 .btn_primary{background-color: $point-color; border: 0; outline: 0; height: 74px; line-height: 74px; padding: 0 40px; border-radius: 37px; font-size: 24px; color: #ffff;}
@@ -59,12 +61,15 @@ $bgsamp: '../../images/sample/';
 .main{
     .section{
         height: 100vh;
-        &:nth-child(1){background-color: red;}
+        &.auto_height{
+            height: auto;
+        }
+        /* &:nth-child(1){background-color: red;}
         &:nth-child(2){background-color: blue;}
         &:nth-child(3){background-color: salmon;}
         &:nth-child(4){background-color: sandybrown;}
         &:nth-child(5){background-color: darkcyan;}
-        &:nth-child(6){background-color: gold;}
+        &:nth-child(6){background-color: gold;} */
         .sec_tit{
             line-height: 58px;
             padding: 10px 0;
@@ -113,7 +118,7 @@ $bgsamp: '../../images/sample/';
     .visual{
         position: relative;
         height: 100%;
-        min-height: 700px;
+        // min-height: 700px;
         .swiper{
             position: relative;
             height: 100%;
@@ -259,8 +264,24 @@ $bgsamp: '../../images/sample/';
     .solution{
         position: relative;
         height: 100%;
-        min-height: 700px;
+        // min-height: 700px;
+        &::before{
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: url('#{$bgsamp}main_solution_bg.jpg') no-repeat 50%;
+            opacity: 0;
+            transform: translateX(-100px);
+            transition: all .3s ease;
+        }
         &.on{
+            &::before{
+                opacity: 1;
+                transform: translateX(0);
+            }
             .right_area{
                 .sec_tit,
                 .sec_txt,
@@ -297,7 +318,7 @@ $bgsamp: '../../images/sample/';
     .app_intro{
         position: relative;
         height: 100%;
-        min-height: 700px;
+        // min-height: 700px;
         &.on{
             .left_area{
                 .sec_tit,
@@ -324,7 +345,7 @@ $bgsamp: '../../images/sample/';
             .sec_tit,
             .sec_txt,
             .sec_link{
-                opacity: 0;
+                // opacity: 0;
                 transform: translateY(30px);
                 transition: transform 1s ease-in-out, opacity 1s ease-in-out;
             }
@@ -408,7 +429,7 @@ $bgsamp: '../../images/sample/';
     .service{
         position: relative;
         height: 100%;
-        min-height: 700px;
+        // min-height: 700px;
         &.on{
             .lst_data{
                 opacity: 1;
@@ -504,7 +525,7 @@ $bgsamp: '../../images/sample/';
     .magazine{
         position: relative;
         height: 100%;
-        min-height: 700px;
+        // min-height: 700px;
         padding-top: 21px;
         background-color: #fff;
         &.on{
@@ -629,7 +650,7 @@ $bgsamp: '../../images/sample/';
     .app_download{
         position: relative;
         height: 100%;
-        min-height: 700px;
+        // min-height: 700px;
         background: #fff url('#{$bgsamp}main_download_bg.jpg') no-repeat center/ cover;
         .right_area{
             position: absolute;
@@ -907,3 +928,153 @@ $bgsamp: '../../images/sample/';
         
     }
 }
+
+/* loading */
+$color: #5C8DF6;
+$colorRight: darken(#5C8DF6, 15%);
+$colorLeft: darken(#5C8DF6, 5%);
+$shadow: #DBE3F4;
+
+.loading{
+    z-index: 9999;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,.9);
+    >div{
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        transform: translate(-50%, -50%);
+        .box_wrap {
+            position: relative;
+            --size: 32px;
+            --duration: 800ms;
+            height: calc(var(--size) * 2);
+            width: calc(var(--size) * 3);
+            transform-style: preserve-3d;
+            transform-origin: 50% 50%;
+            margin-top: calc(var(--size) * 1.5 * -1);
+            transform: rotateX(60deg) rotateZ(45deg) rotateY(0deg) translateZ(0px);
+            .box {
+                width: var(--size);
+                height: var(--size);
+                top: 0;
+                left: 0;
+                position: absolute;
+                transform-style: preserve-3d;
+                &:nth-child(1) {
+                    transform: translate(100%, 0);
+                    animation: box1 var(--duration) linear infinite;
+                }
+                &:nth-child(2) {
+                    transform: translate(0, 100%);
+                    animation: box2 var(--duration) linear infinite;
+                }
+                &:nth-child(3) {
+                    transform: translate(100%, 100%);
+                    animation: box3 var(--duration) linear infinite;
+                }
+                &:nth-child(4) {
+                    transform: translate(200%, 0);
+                    animation: box4 var(--duration) linear infinite;
+                }
+                & > div {
+                    --background: #{$color};
+                    --top: auto;
+                    --right: auto;
+                    --bottom: auto;
+                    --left: auto;
+                    --translateZ: calc(var(--size) / 2);
+                    --rotateY: 0deg;
+                    --rotateX: 0deg;
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    background: var(--background);
+                    top: var(--top);
+                    right: var(--right);
+                    bottom: var(--bottom);
+                    left: var(--left);
+                    transform: rotateY(var(--rotateY)) rotateX(var(--rotateX)) translateZ(var(--translateZ));
+                    &:nth-child(1) {
+                        --top: 0;
+                        --left: 0;
+                    }
+                    &:nth-child(2) {
+                        --background: #{$colorRight};
+                        --right: 0;
+                        --rotateY: 90deg;
+                    }
+                    &:nth-child(3) {
+                        --background: #{$colorLeft};
+                        --rotateX: -90deg;
+                    }
+                    &:nth-child(4) {
+                        --background: #{$shadow};
+                        --top: 0;
+                        --left: 0;
+                        --translateZ: calc(var(--size) * 3 * -1);
+                    }
+                }
+            }
+        }
+        .message{
+            display: block;
+            margin-top: 100px;
+            font-size: 24px;
+            color: #fff;
+            font-family: sans-serif;
+            text-align: center;
+        }
+    }
+    @keyframes box1 {
+        0%,
+        50% {
+            transform: translate(100%, 0);
+        }
+        100% {
+            transform: translate(200%, 0);
+        }
+    }
+    
+    @keyframes box2 {
+        0%{
+            transform: translate(0, 100%);
+        }
+        50% {
+            transform: translate(0, 0);
+        }
+        100% {
+            transform: translate(100%, 0);
+        }
+    }
+    
+    @keyframes box3 {
+        0%,
+        50% {
+            transform: translate(100%, 100%);
+        }
+        100% {
+            transform: translate(0, 100%);
+        }
+    }
+    
+    @keyframes box4 {
+        0%{
+            transform: translate(200%, 0);
+        }
+        50% {
+            transform: translate(200%, 100%);
+        }
+        100% {
+            transform: translate(100%, 100%);
+        }
+    }
+}
+
