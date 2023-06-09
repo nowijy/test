@@ -3,9 +3,6 @@ $bgsvg: '../../images/svg/';
 $bg: '../../images/common/';
 $bgsamp: '../../images/sample/';
 
-body{
-    
-}
 #wrap{
     position: relative;
     min-height: 100vh;
@@ -14,9 +11,9 @@ body{
     }
 }
 
-#container.main{position: relative;}
 .btn_primary{background-color: $point-color; border: 0; outline: 0; height: 74px; line-height: 74px; padding: 0 40px; border-radius: 37px; font-size: 24px; color: #ffff;}
 .btn_primary.btn_more{padding-right: 83px; background-image: url('#{$bgsvg}icon_btn_arrow_16x12.svg'); background-repeat: no-repeat; background-position: calc(100% - 41px) 50%;}
+#container.main{position: relative;}
 .input_check{ /* 실제 체크박스는 화면에서 숨김 */
     display: inline-block;
     line-height: 20px; 
