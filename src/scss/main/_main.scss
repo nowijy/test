@@ -273,8 +273,8 @@ $bgsamp: '../../images/sample/';
             height: 100%;
             background: url('#{$bgsamp}main_solution_bg.jpg') no-repeat 50%;
             opacity: 0;
-            transform: translateX(-100px);
-            transition: all .3s ease;
+            transform: translateX(-50%);
+            transition: all 1s ease;
         }
         &.on{
             &::before{
@@ -465,6 +465,8 @@ $bgsamp: '../../images/sample/';
                 } 
                 li{
                     position: relative;
+                    flex: 1 1 25%;
+                    padding: 0 20px;
                     text-align: center;
                     opacity: 0.7;
                     transition: opacity 400ms ease 0s, padding 400ms ease 0s;
@@ -484,6 +486,7 @@ $bgsamp: '../../images/sample/';
                         }
                     }
                     &.on{
+                        opacity: 1;
                         padding-bottom: 90px;
                         .ico_more{
                             opacity: 1;

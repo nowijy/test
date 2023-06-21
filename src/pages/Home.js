@@ -4,6 +4,13 @@ import '../scss/main/_main.scss';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
+import previewSolution from "../images/sample/main_solution_preview_02.jpg";
+import previewUse1 from "../images/sample/main_use_preview_01.jpg";
+import previewUse2 from "../images/sample/main_use_preview_02.jpg";
+import previewUse3 from "../images/sample/main_use_preview_03.jpg";
+import previewUse4 from "../images/sample/main_use_preview_04.jpg";
+import previewUse5 from "../images/sample/main_use_preview_05.jpg";
+
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
 // import required modules
@@ -11,7 +18,7 @@ import { Navigation, Autoplay, Mousewheel } from "swiper";
 // Import Swiper styles
 import "swiper/css/bundle";
 
-import _ from 'lodash';
+import _, { after } from 'lodash';
 
 function Home() {
     /* home start -- */
@@ -19,16 +26,21 @@ function Home() {
     const [main, setMain] = useState([]);
     const [mainTotal, setMainTotal] = useState(0);
     const [mainToggle, setMainToggle] = useState(false);
-    
+
     useEffect(() => {
-        window.onbeforeunload = function pushRefresh() {
+        window.onbeforeunload = function() {
             window.scrollTo(0, 0);
-          };
+        };
+        
+        if(window.scrollY !== 0) {
+            window.scrollTo(0, 0);
+        }
         document.body.style.overflow = 'hidden';
+
         setTimeout(() => {
             setLoading(false); // 로딩 완료
         }, 300)
-
+        
         return () => {
             window.onbeforeunload = null;
         };
@@ -37,6 +49,10 @@ function Home() {
     const [mainActive, setMainActive] = useState(0);
     const [pageActive, setPageActive] = useState(0);
     const [accumulate, setAccumulate] = useState(0);
+    
+    const [serviceNum, setServiceNum] = useState(0);
+    const [serviceIs, setServiceIs] = useState(null);
+
     function addClass(selector, className) {
         const element = document.querySelector(selector);
         if(element) {
@@ -50,17 +66,19 @@ function Home() {
         }
     }
     useEffect(() => {
-        /* if(window.scrollY !== 0) {
-            window.scrollTo(0, 0);
-        }  */
+        const currentSection = document.querySelector('.section.current') || document.querySelectorAll('.section')[0].classList.add('current'); 
+        const sections = Array.from(document.querySelectorAll('.section'));
+        let currentIndex = sections.indexOf(currentSection);
+        let direction = null; // 이벤트 방향 체크
 
-        let on = 'on';
+        setPageActive(currentIndex);
+        const fix = document.querySelector('.fix');
+        const fixSplash = document.querySelector('.fix .splash');
+        
+        fix.className = 'fix';
+        
+        const on = 'on';
         addClass('#wrap', 'slide_on');
-        // .section > 바로안 자식요소 .on 전부 삭제 
-        /* for(var i = 0; document.querySelectorAll('.section').length > i; i++){
-            const childrenEl = document.querySelectorAll('.section')[i].children;
-            childrenEl[0].classList.remove('on');
-        } */
         if(pageActive === 0) {
             removeClass('#wrap', 'slide_on');
             addClass('.section .visual', on);
@@ -68,8 +86,11 @@ function Home() {
             addClass('.section .solution', on);
         } else if(pageActive === 2) {
             addClass('.section .app_intro', on);
+            addClass('.fix', 'second_on');
+            document.querySelector('.fix .img_area').scrollTo(0, 0);
         } else if(pageActive === 3) {
             addClass('.section .service', on);
+            addClass('.fix', 'third_on');
         } else if(pageActive === 4) {
             addClass('.section .magazine', on);
         } else if(pageActive === 5) {
@@ -80,34 +101,30 @@ function Home() {
             addClass('.section .footer', on);
         }
         
-        const sections = Array.from(document.querySelectorAll('.section'));
-        const currentSection = document.querySelector('.section.current') || document.querySelectorAll('.section')[0].classList.add('current'); 
-        const currentIndex = sections.indexOf(currentSection);
-        setPageActive(currentIndex);
-
+        
+        let fixIs = null;
         // handleScrollandKeyup
         const scrollDelay = 400; // 대기
         const scrollSpeed = 1000; // 속도
         const handleScrollandKeyup = _.debounce((event) => {
-            console.log(accumulate, 'accumulate')
-            let tempAccumulate = accumulate;
-
+            // 이동 전 저장할 변수
+            const thisEl = document.querySelector('.section.current');
+            // 이동 후 위치의 대상 저장할 변수
+            let targetEl = thisEl;
+            
             // speed set
             const container = document.querySelector('#container');
             container.style.transition = `transform ${scrollSpeed}ms ease`; 
-        
-            // 현재 대상 저장할 변수
-            const thisEl = document.querySelector('.section.current');
-            // 이전/다음 위치의 대상 저장할 변수
-            let targetEl = thisEl;
+            let tempAccumulate = accumulate;
 
             // 다음 타깃 검증
             function validationNextTarget() { 
-                // console.log('down');
                 if(thisEl.nextSibling) { // 다음 section이 있다면
                     targetEl = thisEl.nextSibling;
                     tempAccumulate += thisEl.scrollHeight;
-                    if(tempAccumulate > (container.scrollHeight - window.innerHeight)) {
+                    // 최대 transform 가능한 거리보다 크다면
+                    if(tempAccumulate > (container.scrollHeight - window.innerHeight)) { 
+                        // gap만큼 삭제후 이동
                         const gap = tempAccumulate - (container.scrollHeight - window.innerHeight);
                         tempAccumulate -= gap;
                     }
@@ -115,21 +132,88 @@ function Home() {
             }
             // 이전 타깃 검증
             function validationPrevTarget() {
-                // console.log('up');
                 if(thisEl.previousSibling) { // 이전 section이 있다면
                     targetEl = thisEl.previousSibling;
                     tempAccumulate -= thisEl.scrollHeight;
+                    // 최소 tranform 가능한 0보다 작다면 0으로 set
                     if(tempAccumulate < 0) {
                         tempAccumulate = 0;
                     }
                 }
             }
 
+            // fix를 대상으로 scroll 하는경우
+            if(event.target.closest('.fix')) {
+                const fixImgarea = document.querySelector('.fix .img_area');
+                let offsetTop = fixImgarea.scrollTop;
+                let offsetBottom = fixImgarea.scrollHeight - fixImgarea.scrollTop;
+                if(offsetTop === 0 || offsetBottom - fixImgarea.clientHeight <= 10){
+                    if(!fixIs) { // fixIs true not
+                        return fixIs = true; // fixIs true로 변경, return 다음 이벤트 실행 X
+                    }
+                    fixIs = false; // fixIs null로 변경, 이벤트 실행  O
+                } else { // 그 외엔 모두 X
+                    return fixIs = false;
+                }
+            }
+            console.log(fixIs);
+            fixIs = false;
+            
+            // service class가 current일 경우
+            let serviceSection = document.querySelector('.section .service').closest('.section').className;
+            if(serviceSection.includes('current')) {
+                if(!serviceIs) {
+                    const serviceList = document.querySelectorAll('.section .service .lst_data li');
+                    
+                    // on이 없을경우 serviceNum 첫번째 화면으로 인식 -1로 셋팅
+                    // if(!document.querySelectorAll('.section .service .lst_data li.on')) {
+                    //     document.querySelector('.section .service .lst_data ul').className = '';
+                    //     setServiceNum(-1); 
+                    // }
+                    // on이 있는경우
+
+                    for(let i = 0; serviceList.length > i; i++) { // lst에서 on 싹 지우고 아래에서 addClass on주는 과정 수행
+                        serviceList[i].classList.remove('on');
+                    }
+                    
+                    if(event.type === 'wheel'){
+                        if(event.deltaY > 0) { // scroll Down
+                            setServiceNum(serviceNum + 1); // (0,1,2,3) // -1에서 시작한다는 가정하에, 4가 마지막으로 들어옴 
+                            
+                            // if(serviceNum === (serviceList.length - 1)) { // 3이면
+                            //     serviceList[serviceNum].classList.add('on');
+                            //     document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1);
+                            //     return setServiceIs(true); // return true로 다음 페이지로 이동가능하게 해줌
+                            // }
+                        } else if(event.deltaY < 0) { // scroll Up
+                            setServiceNum(serviceNum - 1); // (0,1,2,3) // 4에서 시작한다는 가정하에, -1이 마지막으로 들어옴
+
+                            // if(serviceNum === 0) { // 0이면
+                            //     document.querySelector('.section .service .lst_data ul').className = '';
+                            //     return setServiceIs(true); // return true로 다음 페이지로 이동가능하게 해줌
+                            // }
+                        }
+                        
+                        // lst에 해당하는 요소가 있는지 확인후 addclass on // -1도 아니고 4도 아닌 경우
+                        // if(serviceList?.[serviceNum]) { 
+                        //     serviceList[serviceNum].classList.add('on');
+                        //     document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1);
+                        // }
+                        console.log(serviceNum)
+                        return setServiceIs(null);
+                    }
+                }
+            } else {
+                setServiceIs(null);
+            }
+
             // wheel event
             if(event.type === 'wheel'){
                 if(event.deltaY > 0) { // scroll Down
+                    direction = 'down';
                     validationNextTarget();
                 } else if(event.deltaY < 0) { // scroll Up
+                    direction = 'up';
                     validationPrevTarget();
                 }
             }
@@ -137,28 +221,43 @@ function Home() {
             // keyup event
             if(event.type === 'keyup'){
                 if (event.isComposing || event.keyCode === 40) {
+                    direction = 'down';
                     validationNextTarget();
                 }
                 if (event.isComposing || event.keyCode === 38) {
+                    direction = 'up';
                     validationPrevTarget();
                 }
             }
-
+            
+            let beforeIndex = sections.indexOf(thisEl); // 이동 후 인덱스 = currentIndex
+             // fix show
+            if((beforeIndex === 0 && direction === 'down') || (beforeIndex === 4 && direction === 'up')) {
+                fixSplash.style.display = 'block';
+                setTimeout(() => {
+                    fixSplash.style.opacity = 1;
+                }, 300);
+            }
+            // fix hide
+            if((beforeIndex === 1 && direction === 'up') || (beforeIndex === 3 && direction === 'down')) {
+                fixSplash.style.opacity = '';
+                setTimeout(() => {
+                    fixSplash.style.display = '';
+                }, 300);
+            }
+            
             // 검증 후 결정 값으로 이동
             container.style.transform = `translateY(-${tempAccumulate}px)`;
-
             // .section = .current 전체 삭제, target .current 추가
             for(var i = 0; document.querySelectorAll('.section').length > i; i++){
                 document.querySelectorAll('.section')[i].classList.remove('current');
             }
             targetEl.classList.add('current');
             
-            // index 구하기
-            const beforeIndex = sections.indexOf(thisEl);
-            const currentIndex = sections.indexOf(targetEl);
             setPageActive(currentIndex);
             setAccumulate(tempAccumulate);
         }, scrollDelay)
+
 
         // handleRezise
         const handleRezise = () =>  {
@@ -172,9 +271,10 @@ function Home() {
             setAccumulate(tempAccumulate);
         };
         window.addEventListener('resize', handleRezise);
-        
+    
         // btn_top click event
         document.querySelector('.fix .btn_top').addEventListener('click', function() {
+            // 모두 0으로 reset
             const container = document.querySelector('#container');
             container.style.transform = `translateY(-${0}px)`;
             setAccumulate(0);
@@ -188,7 +288,7 @@ function Home() {
 
         // main last 아닐경우 event 발동X
         if(mainActive === mainTotal) {
-            window.addEventListener('wheel', handleScrollandKeyup);
+            window.addEventListener('wheel', handleScrollandKeyup, { passive : true });
             window.addEventListener('keyup', handleScrollandKeyup);
         }
         return() => {
@@ -196,10 +296,8 @@ function Home() {
             window.removeEventListener('keyup', handleScrollandKeyup);
             window.addEventListener('resize', handleRezise);
         }
-
-       
     }, [pageActive, mainActive, accumulate])
-    
+
 
     // main last index check
     const swiperSlideChange = (() => {
@@ -208,6 +306,7 @@ function Home() {
             setMainToggle(true);
         }
     })
+
     // main swiper toggle
     const mainToggleOn = ((event) => {
         event.preventDefault();
@@ -259,7 +358,8 @@ function Home() {
                     </>
                 ) : null
             }
-             <Header />
+
+            <Header />
             {/* container start -- */}
             <div id="container" className="main">
                 {/* 첫화면 */}
@@ -531,7 +631,6 @@ function Home() {
 
             {/* fix start*/}
             <div className="fix">
-                <div className="dim"></div>
                 {/* splash */}
                 <div className="splash">
                     <div className="splash_hd">
@@ -539,14 +638,14 @@ function Home() {
                         <p className="menu"></p>
                     </div>
                     <div className="img_area">
-                        <div className="first_img"><img src="./images/sample/main_solution_preview_02.jpg" alt=""/></div>
+                        <div className="first_img"><img src={previewSolution} alt=""/></div>
                         <div className="second_img">
                             <ul>
-                                <li><img src="./images/sample/main_use_preview_01.jpg" alt=""/></li>
-                                <li><img src="./images/sample/main_use_preview_02.jpg" alt=""/></li>
-                                <li><img src="./images/sample/main_use_preview_03.jpg" alt=""/></li>
-                                <li><img src="./images/sample/main_use_preview_04.jpg" alt=""/></li>
-                                <li><img src="./images/sample/main_use_preview_05.jpg" alt=""/></li>
+                                <li><img src={previewUse1} alt=""/></li>
+                                <li><img src={previewUse2} alt=""/></li>
+                                <li><img src={previewUse3} alt=""/></li>
+                                <li><img src={previewUse4} alt=""/></li>
+                                <li><img src={previewUse5} alt=""/></li>
                             </ul>
                         </div>
                     </div>
