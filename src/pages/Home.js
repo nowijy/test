@@ -18,7 +18,7 @@ import { Navigation, Autoplay, Mousewheel } from "swiper";
 // Import Swiper styles
 import "swiper/css/bundle";
 
-import _, { after } from 'lodash';
+import _ from 'lodash';
 
 function Home() {
     /* home start -- */
@@ -31,7 +31,6 @@ function Home() {
         window.onbeforeunload = function() {
             window.scrollTo(0, 0);
         };
-        
         if(window.scrollY !== 0) {
             window.scrollTo(0, 0);
         }
@@ -50,35 +49,55 @@ function Home() {
     const [pageActive, setPageActive] = useState(0);
     const [accumulate, setAccumulate] = useState(0);
     
-    const [serviceNum, setServiceNum] = useState(0);
-    const [serviceIs, setServiceIs] = useState(null);
+    // const [serviceNum, setServiceNum] = useState(0);
+    // const [isService, setIsService] = useState(null);
+    // const [isFixed, setIsFixed] = useState(null);
 
+    // addClass('.section', 'on');
     function addClass(selector, className) {
         const element = document.querySelector(selector);
         if(element) {
             element.classList.add(className);
         }
     }
+    // removeClass('.section', 'on');
     function removeClass(selector, className) {
         const element = document.querySelector(selector);
         if(element) {
             element.classList.remove(className);
         }
     }
-    useEffect(() => {
-        const currentSection = document.querySelector('.section.current') || document.querySelectorAll('.section')[0].classList.add('current'); 
-        const sections = Array.from(document.querySelectorAll('.section'));
-        let currentIndex = sections.indexOf(currentSection);
-        let direction = null; // 이벤트 방향 체크
 
+    // click 이벤트
+    useEffect(() => {
+        const btnTop = document.querySelector('.fix .btn_top');
+        // btn_top click event
+        function btnTopMove() {
+            // 모두 0으로 reset
+            const container = document.querySelector('#container');
+            container.style.transform = `translateY(-${0}px)`;
+            setAccumulate(0);
+            setPageActive(0);
+
+            for(var i = 0; document.querySelectorAll('.section').length > i; i++){
+                document.querySelectorAll('.section')[i].classList.remove('current');
+            }
+            document.querySelectorAll('.section')[0].classList.add('current');
+        }
+        btnTop.addEventListener('click', btnTopMove);
+        return() => {
+            btnTop.removeEventListener('click', btnTopMove);
+        }
+    }, [])
+
+    // pageActive 이벤트
+    useEffect(() => {        
+        const sections = Array.from(document.querySelectorAll('.section'));
+        const currentSection = document.querySelector('.section.current') || document.querySelectorAll('.section')[0].classList.add('current'); 
+        let currentIndex = sections.indexOf(currentSection);
         setPageActive(currentIndex);
-        const fix = document.querySelector('.fix');
-        const fixSplash = document.querySelector('.fix .splash');
-        
-        fix.className = 'fix';
-        
+
         const on = 'on';
-        addClass('#wrap', 'slide_on');
         if(pageActive === 0) {
             removeClass('#wrap', 'slide_on');
             addClass('.section .visual', on);
@@ -87,7 +106,6 @@ function Home() {
         } else if(pageActive === 2) {
             addClass('.section .app_intro', on);
             addClass('.fix', 'second_on');
-            document.querySelector('.fix .img_area').scrollTo(0, 0);
         } else if(pageActive === 3) {
             addClass('.section .service', on);
             addClass('.fix', 'third_on');
@@ -100,13 +118,76 @@ function Home() {
         } else if(pageActive === 7) {
             addClass('.section .footer', on);
         }
-        
-        
-        let fixIs = null;
-        // handleScrollandKeyup
+        addClass('#wrap', 'slide_on');
+    }, [pageActive])
+
+    // scroll, keyup 이벤트
+    useEffect(() => {
+        const sections = Array.from(document.querySelectorAll('.section'));
         const scrollDelay = 400; // 대기
         const scrollSpeed = 1000; // 속도
-        const handleScrollandKeyup = _.debounce((event) => {
+        let direction = null; // 이벤트 방향 체크
+        
+        // fixed 이벤트
+        const fix = document.querySelector('.fix');
+        const fixSplash = document.querySelector('.fix .splash');
+        fix.className = 'fix';
+        let isFixed = null; // fixed scroll 이벤트 체크
+        const fixFn = ((event) => {
+            if(!isFixed && event.target.closest('.fix')) { 
+                const fixImgarea = document.querySelector('.fix .img_area');
+                let offsetTop = fixImgarea.scrollTop;
+                let offsetBottom = fixImgarea.scrollHeight - fixImgarea.scrollTop;
+                if(offsetTop === 0  && direction === 'up'){
+                    if(!isFixed) { // fixIs true not
+                        return isFixed = true; // fixIs true로 변경, return 다음 이벤트 실행 X
+                    }
+                }
+                if(offsetBottom - fixImgarea.clientHeight <= 10 && direction === 'down') {
+                    if(!isFixed) { // fixIs true not
+                        return isFixed = true; // fixIs true로 변경, return 다음 이벤트 실행 X
+                    }
+                }
+            }
+        })
+
+        // service 이벤트
+        let serviceNum = -1; // 기본값
+        let isService = null; // service scroll 이벤트 체크
+        const serviceFn = ((event) => {
+             // service class가 current일 경우
+            let serviceSection = document.querySelector('.section .service').closest('.section').className;
+            if(!isService && document.querySelector('.section.current .service')) {
+                const serviceList = document.querySelectorAll('.section .service .lst_data li');
+                // on이 없을경우 ul class 삭제
+                // if(isService === -1) {
+                //     document.querySelector('.section .service .lst_data ul').className = '';
+                // }
+                // on이 있는경우 on 전체삭제
+                // for(let i = 0; serviceList.length > i; i++) { 
+                //     serviceList[i].classList.remove('on');
+                // }
+
+                if(direction === 'down') {
+                    if(serviceNum === (serviceList.length - 1)) { // 3이면
+                        serviceNum = serviceList.length - 1;
+                    }
+                } else if(direction === 'up') {
+                    if(serviceNum === -1) {
+                        serviceNum = -1;
+                    }
+                }
+
+                
+                // lst에 해당하는 요소가 있는지 확인후 addclass on // -1도 아니고 4도 아닌 경우
+                // if(serviceList?.[serviceNum]) { 
+                //     serviceList[serviceNum].classList.add('on');
+                //     document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1);
+                // }
+            }
+        })
+        
+        const fullpageFn = _.debounce((event) => {
             // 이동 전 저장할 변수
             const thisEl = document.querySelector('.section.current');
             // 이동 후 위치의 대상 저장할 변수
@@ -116,6 +197,13 @@ function Home() {
             const container = document.querySelector('#container');
             container.style.transition = `transform ${scrollSpeed}ms ease`; 
             let tempAccumulate = accumulate;
+
+            if(!isFixed && event.target.closest('.fix')) { 
+                return;
+            }
+            if(!isService && document.querySelector('.section.current .service')) {
+                return;
+            }
 
             // 다음 타깃 검증
             function validationNextTarget() { 
@@ -142,103 +230,24 @@ function Home() {
                 }
             }
 
-            // fix를 대상으로 scroll 하는경우
-            if(event.target.closest('.fix')) {
-                const fixImgarea = document.querySelector('.fix .img_area');
-                let offsetTop = fixImgarea.scrollTop;
-                let offsetBottom = fixImgarea.scrollHeight - fixImgarea.scrollTop;
-                if(offsetTop === 0 || offsetBottom - fixImgarea.clientHeight <= 10){
-                    if(!fixIs) { // fixIs true not
-                        return fixIs = true; // fixIs true로 변경, return 다음 이벤트 실행 X
-                    }
-                    fixIs = false; // fixIs null로 변경, 이벤트 실행  O
-                } else { // 그 외엔 모두 X
-                    return fixIs = false;
-                }
-            }
-            console.log(fixIs);
-            fixIs = false;
             
-            // service class가 current일 경우
-            let serviceSection = document.querySelector('.section .service').closest('.section').className;
-            if(serviceSection.includes('current')) {
-                if(!serviceIs) {
-                    const serviceList = document.querySelectorAll('.section .service .lst_data li');
-                    
-                    // on이 없을경우 serviceNum 첫번째 화면으로 인식 -1로 셋팅
-                    // if(!document.querySelectorAll('.section .service .lst_data li.on')) {
-                    //     document.querySelector('.section .service .lst_data ul').className = '';
-                    //     setServiceNum(-1); 
-                    // }
-                    // on이 있는경우
+            // is fixed 상태가 true이면서 fix가 아닐때만 통과됨, 다시 is fixed는 false로
 
-                    for(let i = 0; serviceList.length > i; i++) { // lst에서 on 싹 지우고 아래에서 addClass on주는 과정 수행
-                        serviceList[i].classList.remove('on');
-                    }
-                    
-                    if(event.type === 'wheel'){
-                        if(event.deltaY > 0) { // scroll Down
-                            setServiceNum(serviceNum + 1); // (0,1,2,3) // -1에서 시작한다는 가정하에, 4가 마지막으로 들어옴 
-                            
-                            // if(serviceNum === (serviceList.length - 1)) { // 3이면
-                            //     serviceList[serviceNum].classList.add('on');
-                            //     document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1);
-                            //     return setServiceIs(true); // return true로 다음 페이지로 이동가능하게 해줌
-                            // }
-                        } else if(event.deltaY < 0) { // scroll Up
-                            setServiceNum(serviceNum - 1); // (0,1,2,3) // 4에서 시작한다는 가정하에, -1이 마지막으로 들어옴
-
-                            // if(serviceNum === 0) { // 0이면
-                            //     document.querySelector('.section .service .lst_data ul').className = '';
-                            //     return setServiceIs(true); // return true로 다음 페이지로 이동가능하게 해줌
-                            // }
-                        }
-                        
-                        // lst에 해당하는 요소가 있는지 확인후 addclass on // -1도 아니고 4도 아닌 경우
-                        // if(serviceList?.[serviceNum]) { 
-                        //     serviceList[serviceNum].classList.add('on');
-                        //     document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1);
-                        // }
-                        console.log(serviceNum)
-                        return setServiceIs(null);
-                    }
-                }
-            } else {
-                setServiceIs(null);
+            if(direction === 'down') {
+                validationNextTarget();
+            } else if(direction === 'up'){
+                validationPrevTarget();
             }
 
-            // wheel event
-            if(event.type === 'wheel'){
-                if(event.deltaY > 0) { // scroll Down
-                    direction = 'down';
-                    validationNextTarget();
-                } else if(event.deltaY < 0) { // scroll Up
-                    direction = 'up';
-                    validationPrevTarget();
-                }
-            }
-
-            // keyup event
-            if(event.type === 'keyup'){
-                if (event.isComposing || event.keyCode === 40) {
-                    direction = 'down';
-                    validationNextTarget();
-                }
-                if (event.isComposing || event.keyCode === 38) {
-                    direction = 'up';
-                    validationPrevTarget();
-                }
-            }
-            
-            let beforeIndex = sections.indexOf(thisEl); // 이동 후 인덱스 = currentIndex
-             // fix show
+            let beforeIndex = sections.indexOf(thisEl); // 이동 후 인덱스 = currentIndex, 이동 전 인덱스 = beforeIndex
+            // fixSplash show
             if((beforeIndex === 0 && direction === 'down') || (beforeIndex === 4 && direction === 'up')) {
                 fixSplash.style.display = 'block';
                 setTimeout(() => {
                     fixSplash.style.opacity = 1;
                 }, 300);
             }
-            // fix hide
+            // fixSplash hide
             if((beforeIndex === 1 && direction === 'up') || (beforeIndex === 3 && direction === 'down')) {
                 fixSplash.style.opacity = '';
                 setTimeout(() => {
@@ -253,11 +262,33 @@ function Home() {
                 document.querySelectorAll('.section')[i].classList.remove('current');
             }
             targetEl.classList.add('current');
-            
-            setPageActive(currentIndex);
             setAccumulate(tempAccumulate);
+        
         }, scrollDelay)
-
+        
+        function handleScrollandKeyup(event) {
+            // 이벤트 방향 저장
+            if(event.type === 'wheel'){
+                if(event.deltaY > 0) { // scroll Down
+                    direction = 'down';
+                } else if(event.deltaY < 0) { // scroll Up
+                    direction = 'up';
+                }
+            }
+            // keyup event
+            if(event.type === 'keyup'){
+                if (event.isComposing || event.keyCode === 40) {
+                    direction = 'down';
+                }
+                if (event.isComposing || event.keyCode === 38) {
+                    direction = 'up';
+                }
+            }
+            serviceFn(event);
+            fixFn(event); // 대기시간 X = fix event
+            fullpageFn(event); // 대기시간 O = 전체 페이지 event
+        }
+        
 
         // handleRezise
         const handleRezise = () =>  {
@@ -272,20 +303,6 @@ function Home() {
         };
         window.addEventListener('resize', handleRezise);
     
-        // btn_top click event
-        document.querySelector('.fix .btn_top').addEventListener('click', function() {
-            // 모두 0으로 reset
-            const container = document.querySelector('#container');
-            container.style.transform = `translateY(-${0}px)`;
-            setAccumulate(0);
-            setPageActive(0);
-
-            for(var i = 0; document.querySelectorAll('.section').length > i; i++){
-                document.querySelectorAll('.section')[i].classList.remove('current');
-            }
-            document.querySelectorAll('.section')[0].classList.add('current');
-        })
-
         // main last 아닐경우 event 발동X
         if(mainActive === mainTotal) {
             window.addEventListener('wheel', handleScrollandKeyup, { passive : true });
@@ -297,7 +314,6 @@ function Home() {
             window.addEventListener('resize', handleRezise);
         }
     }, [pageActive, mainActive, accumulate])
-
 
     // main last index check
     const swiperSlideChange = (() => {
