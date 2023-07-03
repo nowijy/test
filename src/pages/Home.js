@@ -28,20 +28,20 @@ function Home() {
     const [mainToggle, setMainToggle] = useState(false);
 
     useEffect(() => {
-        window.onbeforeunload = function() {
+        console.log("실행 테스트");
+        window.onbeforeunload = function() { // 페이지를 벗어나면서
             window.scrollTo(0, 0);
         };
-        if(window.scrollY !== 0) {
+        if(window.scrollY !== 0) { // window scrollY가 0이 아닌 경우
             window.scrollTo(0, 0);
         }
-        document.body.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden'; 
 
         setTimeout(() => {
             setLoading(false); // 로딩 완료
         }, 300)
-        
         return () => {
-            window.onbeforeunload = null;
+            window.onbeforeunload = null; // 이벤트 반환
         };
     })
     
@@ -49,10 +49,6 @@ function Home() {
     const [pageActive, setPageActive] = useState(0);
     const [accumulate, setAccumulate] = useState(0);
     
-    // const [serviceNum, setServiceNum] = useState(0);
-    // const [isService, setIsService] = useState(null);
-    // const [isFixed, setIsFixed] = useState(null);
-
     // addClass('.section', 'on');
     function addClass(selector, className) {
         const element = document.querySelector(selector);
@@ -68,7 +64,7 @@ function Home() {
         }
     }
 
-    // click 이벤트
+    // btn_top click 이벤트
     useEffect(() => {
         const btnTop = document.querySelector('.fix .btn_top');
         // btn_top click event
@@ -79,9 +75,11 @@ function Home() {
             setAccumulate(0);
             setPageActive(0);
 
+            // .section current class 삭제 
             for(var i = 0; document.querySelectorAll('.section').length > i; i++){
                 document.querySelectorAll('.section')[i].classList.remove('current');
             }
+            // .section[0] current class 추가
             document.querySelectorAll('.section')[0].classList.add('current');
         }
         btnTop.addEventListener('click', btnTopMove);
@@ -92,11 +90,7 @@ function Home() {
 
     // pageActive 이벤트
     useEffect(() => {        
-        const sections = Array.from(document.querySelectorAll('.section'));
-        const currentSection = document.querySelector('.section.current') || document.querySelectorAll('.section')[0].classList.add('current'); 
-        let currentIndex = sections.indexOf(currentSection);
-        setPageActive(currentIndex);
-
+        console.log(pageActive)
         const on = 'on';
         if(pageActive === 0) {
             removeClass('#wrap', 'slide_on');
@@ -124,69 +118,77 @@ function Home() {
     // scroll, keyup 이벤트
     useEffect(() => {
         const sections = Array.from(document.querySelectorAll('.section'));
+        // const currentSection = document.querySelector('.section.current') || document.querySelectorAll('.section')[0].classList.add('current'); 
+        // let currentIndex = sections.indexOf(currentSection);
+        // setPageActive(currentIndex);
+
         const scrollDelay = 400; // 대기
         const scrollSpeed = 1000; // 속도
         let direction = null; // 이벤트 방향 체크
         
-        // fixed 이벤트
+        // **** fixed 이벤트 **** //
         const fix = document.querySelector('.fix');
         const fixSplash = document.querySelector('.fix .splash');
         fix.className = 'fix';
         let isFixed = null; // fixed scroll 이벤트 체크
         const fixFn = ((event) => {
+            // isFixed false이면서 이벤트 타겟이 fix 인경우
             if(!isFixed && event.target.closest('.fix')) { 
                 const fixImgarea = document.querySelector('.fix .img_area');
                 let offsetTop = fixImgarea.scrollTop;
                 let offsetBottom = fixImgarea.scrollHeight - fixImgarea.scrollTop;
                 if(offsetTop === 0  && direction === 'up'){
-                    if(!isFixed) { // fixIs true not
+                    if(!isFixed) { // fixIs true 아니면
                         return isFixed = true; // fixIs true로 변경, return 다음 이벤트 실행 X
                     }
                 }
                 if(offsetBottom - fixImgarea.clientHeight <= 10 && direction === 'down') {
-                    if(!isFixed) { // fixIs true not
+                    if(!isFixed) { // fixIs true 아니면
                         return isFixed = true; // fixIs true로 변경, return 다음 이벤트 실행 X
                     }
                 }
             }
         })
 
-        // service 이벤트
+        // **** service 이벤트 **** //
         let serviceNum = -1; // 기본값
         let isService = null; // service scroll 이벤트 체크
-        const serviceFn = ((event) => {
-             // service class가 current일 경우
-            let serviceSection = document.querySelector('.section .service').closest('.section').className;
+        // isService true 상태로 fullpageFn 통과 후, 이벤트 다시 타면서 isService는 다시 null임 
+        const serviceFn = _.debounce((event) => {
             if(!isService && document.querySelector('.section.current .service')) {
-                const serviceList = document.querySelectorAll('.section .service .lst_data li');
-                // on이 없을경우 ul class 삭제
-                // if(isService === -1) {
-                //     document.querySelector('.section .service .lst_data ul').className = '';
-                // }
-                // on이 있는경우 on 전체삭제
-                // for(let i = 0; serviceList.length > i; i++) { 
-                //     serviceList[i].classList.remove('on');
-                // }
-
+                const serviceList = Array.from(document.querySelectorAll('.section .service .lst_data li'));
+                serviceNum = serviceList.indexOf(document.querySelector('.section .service .lst_data li.on'));
+                // lst_data li 중에 on이 있는지 확인, 없으면 -1 반환 
+                
                 if(direction === 'down') {
-                    if(serviceNum === (serviceList.length - 1)) { // 3이면
-                        serviceNum = serviceList.length - 1;
+                    if(serviceNum < (serviceList.length - 1)) { // 3보다 작은 경우에만
+                        serviceNum += 1;
+                    } else if(serviceNum === (serviceList.length - 1)) { // 3과 같은 경우
+                        return isService = true; // 다음 섹션으로 이동 허가
                     }
-                } else if(direction === 'up') {
-                    if(serviceNum === -1) {
-                        serviceNum = -1;
+                } else if(direction === 'up') { // -1보다 큰 경우에만
+                    if(serviceNum > -1) { // -1보다 큰경우
+                        serviceNum -= 1;
+                    } else if(serviceNum === -1) { // -1과 같은 경우
+                        return isService = true; // 이전 섹션으로 이동 허가
                     }
                 }
-
                 
-                // lst에 해당하는 요소가 있는지 확인후 addclass on // -1도 아니고 4도 아닌 경우
-                // if(serviceList?.[serviceNum]) { 
-                //     serviceList[serviceNum].classList.add('on');
-                //     document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1);
-                // }
+                // lst_data li에서 전체 on 삭제, 해당 li에만 on class 추가
+                for(let i = 0; serviceList.length > i; i++) { 
+                    serviceList[i].classList.remove('on');
+                }
+                if(serviceNum === -1) { // -1인 경우 bg class 삭제
+                    document.querySelector('.section .service .lst_data ul').className = '';
+                }
+                if(serviceList?.[serviceNum]) { // 0~3 존재하는 경우 class 추가, bg class 수정
+                    serviceList[serviceNum].classList.add('on');
+                    document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1); // (1~4까지)
+                }
             }
-        })
+        }, scrollDelay)
         
+        // **** 전체 scroll 이벤트 **** //
         const fullpageFn = _.debounce((event) => {
             // 이동 전 저장할 변수
             const thisEl = document.querySelector('.section.current');
@@ -198,41 +200,42 @@ function Home() {
             container.style.transition = `transform ${scrollSpeed}ms ease`; 
             let tempAccumulate = accumulate;
 
-            if(!isFixed && event.target.closest('.fix')) { 
+            // isfixed가 false이면서 이벤트 타겟이 fix인 경우 실행X
+            if(!isFixed && event.target.closest('.fix')) {  
                 return;
             }
-            if(!isService && document.querySelector('.section.current .service')) {
+            
+            // isService가 false이면서 .service 부모 section이 current인 경우 실행X
+            if(!isService && document.querySelector('.section.current .service')) { 
                 return;
             }
-
-            // 다음 타깃 검증
-            function validationNextTarget() { 
-                if(thisEl.nextSibling) { // 다음 section이 있다면
-                    targetEl = thisEl.nextSibling;
-                    tempAccumulate += thisEl.scrollHeight;
-                    // 최대 transform 가능한 거리보다 크다면
-                    if(tempAccumulate > (container.scrollHeight - window.innerHeight)) { 
-                        // gap만큼 삭제후 이동
-                        const gap = tempAccumulate - (container.scrollHeight - window.innerHeight);
-                        tempAccumulate -= gap;
-                    }
-                }
-            }
+            
             // 이전 타깃 검증
             function validationPrevTarget() {
                 if(thisEl.previousSibling) { // 이전 section이 있다면
                     targetEl = thisEl.previousSibling;
-                    tempAccumulate -= thisEl.scrollHeight;
+                    tempAccumulate -= thisEl.scrollHeight; // 현재 타겟 높이만큼 - 이동
                     // 최소 tranform 가능한 0보다 작다면 0으로 set
                     if(tempAccumulate < 0) {
                         tempAccumulate = 0;
                     }
                 }
             }
+            // 다음 타깃 검증
+            function validationNextTarget() { 
+                if(thisEl.nextSibling) { // 다음 section이 있다면
+                    targetEl = thisEl.nextSibling;
+                    tempAccumulate += targetEl.scrollHeight; // 다음 타겟 높이만큼 + 이동
+                    // 최대 transform 전체높이보다 크다면
+                    if(tempAccumulate > (container.scrollHeight - window.innerHeight)) {
+                        // gap만큼 삭제후 이동
+                        const gap = tempAccumulate - (container.scrollHeight - window.innerHeight);
+                        tempAccumulate -= gap;
+                    }
+                }
+            }
 
-            
             // is fixed 상태가 true이면서 fix가 아닐때만 통과됨, 다시 is fixed는 false로
-
             if(direction === 'down') {
                 validationNextTarget();
             } else if(direction === 'up'){
@@ -262,8 +265,10 @@ function Home() {
                 document.querySelectorAll('.section')[i].classList.remove('current');
             }
             targetEl.classList.add('current');
+            const currentIndex = sections.indexOf(targetEl);
+
             setAccumulate(tempAccumulate);
-        
+            setPageActive(currentIndex);
         }, scrollDelay)
         
         function handleScrollandKeyup(event) {
@@ -327,11 +332,11 @@ function Home() {
     const mainToggleOn = ((event) => {
         event.preventDefault();
         if(event.target.className === "btn_toggle") {
-            main.autoplay.stop();
-            setMainToggle(true);
+            main.autoplay.stop(); // 기능 stop
+            setMainToggle(true); // stop&play 버튼
         } else {
-            main.autoplay.start();
-            setMainToggle(false);
+            main.autoplay.start(); // 기능 play
+            setMainToggle(false); // stop&play 버튼
         }
     })
 
@@ -381,11 +386,21 @@ function Home() {
                 {/* 첫화면 */}
                 <section className="section current">
                     <div className="visual">
+                        {/* swiper start -- */}
                         <div className="swiper swiper-container">
                             <Swiper
                                 className=""
                                 spaceBetween={0}
                                 slidesPerView="auto"
+                                navigation={true} // modules
+                                pagination={false} // modules, pagination={{clickable: true}} 
+                                loop={false}
+                                mousewheel={true}
+                                modules={[ Navigation, Autoplay, Mousewheel ]}
+                                autoplay={{
+                                    delay: 2500,
+                                    disableOnInteraction: false,
+                                }}
                                 onSlideChange={(swiper) => {
                                     setMainActive(swiper.realIndex + 1);
                                 }}
@@ -396,15 +411,6 @@ function Home() {
                                 }}
                                 onSlideChangeTransitionEnd={(swiper) => {
                                     swiperSlideChange(swiper);
-                                }}
-                                navigation={true} // modules
-                                pagination={false} // modules, pagination={{clickable: true}} 
-                                loop={false}
-                                mousewheel={true}
-                                modules={[ Navigation, Autoplay, Mousewheel ]}
-                                autoplay={{
-                                    delay: 2500,
-                                    disableOnInteraction: false,
                                 }}
                             >
                                 {/* 슬라이드 생성된 경우 -> 렌더링 */}
@@ -431,6 +437,7 @@ function Home() {
                                 <p className="txt">SCROLL<span className="bar"></span></p>
                             </div>
                         </div>
+                        {/* -- swiper end */}
                     </div>
                 </section>
 
@@ -458,44 +465,52 @@ function Home() {
                         
                         {/* swiper start -- */}
                         <div className="swiper swiper-container">
-                            <div className="swiper-wrapper">
-                                <div className="swiper-slide slide1">
+                            <Swiper
+                                className=""
+                                spaceBetween={40}
+                                slidesPerView='auto'
+                                slidesPerGroup={1}
+                                slidesOffsetBefore={1300}
+                                slidesOffsetAfter={180}
+                                speed={400}
+                                loop={false}
+                                mousewheel={true}
+                                autoplay={false}
+                                modules={[ Navigation, Autoplay, Mousewheel ]}
+                            >
+                                <SwiperSlide className="slide slide1">
                                     <p className="lst_tit">Step. 01 <span>앱 다운로드</span></p>
                                     <p className="lst_txt">
                                         구글 플레이, 애플 스토어에서 
                                         <span>ID.IM을 검색 후 설치해 주세요.</span>
                                     </p>
-                                </div>
-
-                                <div className="swiper-slide slide2">
+                                </SwiperSlide>
+                                <SwiperSlide className="slide slide2">
                                     <p className="lst_tit">Step. 02 <span>회원가입 & 구독</span></p>
                                     <p className="lst_txt">회원가입 후 나에게 필요한
                                         <span>ID.IM 제품을 구독합니다.</span>
                                     </p>
-                                </div>
-
-                                <div className="swiper-slide slide3">
+                                </SwiperSlide>
+                                <SwiperSlide className="slide slide3">
                                     <p className="lst_tit">Step. 03 <span>DNA 검사 & 문진</span></p>
                                     <p className="lst_txt">타고난 나를 확인하기 위한
                                         <span>DNA검사와 현재의 나를 분석하기</span>
                                         <span>위한 문진을 진행해 주세요.</span>
                                     </p>
-                                </div>
-
-                                <div className="swiper-slide slide4">
+                                </SwiperSlide>
+                                <SwiperSlide className="slide slide4">
                                     <p className="lst_tit">Step. 04 <span>종합 솔루션 확인</span></p>
                                     <p className="lst_txt">DNA와 현재 상태를 종합적으로 분석해
                                         <span>나에게 필요한 솔루션을 전달해 드려요.</span>
                                     </p>
-                                </div>
-                                
-                                <div className="swiper-slide slide5">
+                                </SwiperSlide>
+                                <SwiperSlide className="slide slide5">
                                     <p className="lst_tit">Step. 05 <span>맞춤 제품 사용</span></p>
                                     <p className="lst_txt">나만을 위해 준비된 한 달 사용분의 
                                         <span>ID.IM 맞춤 제품을 꾸준히 사용합니다.</span>
                                     </p>
-                                </div>
-                            </div>
+                                </SwiperSlide>
+                            </Swiper>
                         </div>
                         {/* -- swiper end */}
                     </div>

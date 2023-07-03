@@ -271,7 +271,7 @@ $bgsamp: '../../images/sample/';
             top: 0;
             width: 50%;
             height: 100%;
-            background: url('#{$bgsamp}main_solution_bg.jpg') no-repeat 50%;
+            background: url('#{$bgsamp}main_solution_bg.jpg') no-repeat 0 50%;
             opacity: 0;
             transform: translateX(-50%);
             transition: all 1s ease;
@@ -433,6 +433,7 @@ $bgsamp: '../../images/sample/';
             .lst_data{
                 opacity: 1;
                 ul{
+                    background-image: url('#{$bgsamp}main_service_off.jpg');   
                     li{
                     }
                 }
