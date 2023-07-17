@@ -432,11 +432,11 @@ $bgsamp: '../../images/sample/';
         &.on{
             .lst_data{
                 opacity: 1;
-                ul{
-                    background-image: url('#{$bgsamp}main_service_off.jpg');   
-                    li{
-                    }
-                }
+                // ul{
+                //     background-image: url('#{$bgsamp}main_service_off.jpg');   
+                //     li{
+                //     }
+                // }
             }
         }
         .lst_data{

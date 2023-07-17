@@ -49,20 +49,6 @@ function Home() {
     const [pageActive, setPageActive] = useState(0);
     const [accumulate, setAccumulate] = useState(0);
     
-    // addClass('.section', 'on');
-    function addClass(selector, className) {
-        const element = document.querySelector(selector);
-        if(element) {
-            element.classList.add(className);
-        }
-    }
-    // removeClass('.section', 'on');
-    function removeClass(selector, className) {
-        const element = document.querySelector(selector);
-        if(element) {
-            element.classList.remove(className);
-        }
-    }
 
     // btn_top click 이벤트
     useEffect(() => {
@@ -90,29 +76,26 @@ function Home() {
 
     // pageActive 이벤트
     useEffect(() => {        
-        console.log(pageActive)
-        const on = 'on';
-        if(pageActive === 0) {
-            removeClass('#wrap', 'slide_on');
-            addClass('.section .visual', on);
-        } else if(pageActive === 1) {
-            addClass('.section .solution', on);
+        // console.log(pageActive, 'pageActive')
+        const wrap = document.querySelector('#wrap');
+        wrap.classList.add('slide_on'); 
+        
+        const fix = document.querySelector('.fix');
+        fix.className = 'fix'; // fix class 원위치
+
+        const on = 'on'; // section active class명, on은 지워지지 않고 그대로 유지
+        let selectSection = document.querySelectorAll('.section')[pageActive];
+        selectSection.getElementsByTagName('div')[0].classList.add(on); // 가장 첫번째 div에 on
+        
+        if (pageActive === 0) {
+            wrap.classList.remove('slide_on');
         } else if(pageActive === 2) {
-            addClass('.section .app_intro', on);
-            addClass('.fix', 'second_on');
+            document.querySelector('.fix').classList.add('second_on');
         } else if(pageActive === 3) {
-            addClass('.section .service', on);
-            addClass('.fix', 'third_on');
+            document.querySelector('.fix').classList.add('third_on');
         } else if(pageActive === 4) {
-            addClass('.section .magazine', on);
-        } else if(pageActive === 5) {
-            addClass('.section .app_download', on);
-        } else if(pageActive === 6) {
-            addClass('.section .news', on);
-        } else if(pageActive === 7) {
-            addClass('.section .footer', on);
+            document.querySelector('.fix').classList.add('last_on');
         }
-        addClass('#wrap', 'slide_on');
     }, [pageActive])
 
     // scroll, keyup 이벤트
@@ -129,7 +112,7 @@ function Home() {
         // **** fixed 이벤트 **** //
         const fix = document.querySelector('.fix');
         const fixSplash = document.querySelector('.fix .splash');
-        fix.className = 'fix';
+        // fix.className = 'fix';
         let isFixed = null; // fixed scroll 이벤트 체크
         const fixFn = ((event) => {
             // isFixed false이면서 이벤트 타겟이 fix 인경우
@@ -550,7 +533,8 @@ function Home() {
                 <section className="section"> 
                     <div className="magazine">
                         {/* swiper start -- */}
-                        <div className="swiper">
+                        안뇨쇼
+                        {/* <div className="swiper">
                             <div className="swiper-wrapper">
                                 <div className="swiper-slide slide1">
                                     <p className="sec_tit">최신 트렌드부터
@@ -608,7 +592,7 @@ function Home() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         {/* -- swiper end */}
                     </div>
                 </section>
