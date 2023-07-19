@@ -22,10 +22,19 @@ import _ from 'lodash';
 
 function Home() {
     /* home start -- */
+
     const [loading, setLoading] = useState(true);
+    const [pageActive, setPageActive] = useState(0);
+    const [accumulate, setAccumulate] = useState(0);
+    /* swiper 관련 */
     const [main, setMain] = useState([]);
     const [mainTotal, setMainTotal] = useState(0);
+    const [mainActive, setMainActive] = useState(0);
     const [mainToggle, setMainToggle] = useState(false);
+    
+    const [appIntro, setAppIntro] = useState([]);
+    const [appIntroActive, setAppIntroActive] = useState(0);
+    const [appIntroTotal, setAppIntroTotal] = useState(0);
 
     useEffect(() => {
         console.log("실행 테스트");
@@ -44,11 +53,6 @@ function Home() {
             window.onbeforeunload = null; // 이벤트 반환
         };
     })
-    
-    const [mainActive, setMainActive] = useState(0);
-    const [pageActive, setPageActive] = useState(0);
-    const [accumulate, setAccumulate] = useState(0);
-    
 
     // btn_top click 이벤트
     useEffect(() => {
@@ -74,6 +78,9 @@ function Home() {
         }
     }, [])
 
+
+
+    
     // pageActive 이벤트
     useEffect(() => {        
         // console.log(pageActive, 'pageActive')
@@ -98,6 +105,9 @@ function Home() {
         }
     }, [pageActive])
 
+
+
+
     // scroll, keyup 이벤트
     useEffect(() => {
         const sections = Array.from(document.querySelectorAll('.section'));
@@ -110,10 +120,31 @@ function Home() {
         let direction = null; // 이벤트 방향 체크
         
         // **** fixed 이벤트 **** //
-        const fix = document.querySelector('.fix');
-        const fixSplash = document.querySelector('.fix .splash');
-        // fix.className = 'fix';
         let isFixed = null; // fixed scroll 이벤트 체크
+        const fixSplashFn = _.debounce((event) => {
+            const fix = document.querySelector('.fix');
+            const fixSplash = document.querySelector('.fix .splash');
+            // let beforeIndex = sections.indexOf(thisEl); // 이동 후 인덱스 = currentIndex, 이동 전 인덱스 = beforeIndex
+            // fixSplash show
+            if((pageActive === 0 && direction === 'down') || (pageActive === 4 && direction === 'up')) {
+                fixSplash.style.display = 'block';
+                setTimeout(() => {
+                    fixSplash.style.opacity = 1;
+                }, 300);
+            }
+            // fixSplash hide
+            if((pageActive === 1 && direction === 'up') || (pageActive === 3 && direction === 'down')) {
+                fixSplash.style.opacity = '';
+                setTimeout(() => {
+                    fixSplash.style.display = '';
+                }, 300);
+            }
+        }, scrollDelay)
+
+        /* --------------------------------------------------------------------------------------
+            ***** fixFn 이벤트: splash 안에서 scroll 또는 keyup 이벤트 발생 *****
+        -------------------------------------------------------------------------------------- */
+        // fullpageFn 이벤트 시간과 맞지 않아서 FixFn 분리
         const fixFn = ((event) => {
             // isFixed false이면서 이벤트 타겟이 fix 인경우
             if(!isFixed && event.target.closest('.fix')) { 
@@ -133,7 +164,9 @@ function Home() {
             }
         })
 
-        // **** service 이벤트 **** //
+        /* --------------------------------------------------------------------------------------
+            ***** serviceFn 이벤트: service 안에서 scroll 또는 keyup 이벤트 발생 *****
+        -------------------------------------------------------------------------------------- */
         let serviceNum = -1; // 기본값
         let isService = null; // service scroll 이벤트 체크
         // isService true 상태로 fullpageFn 통과 후, 이벤트 다시 타면서 isService는 다시 null임 
@@ -170,8 +203,10 @@ function Home() {
                 }
             }
         }, scrollDelay)
-        
-        // **** 전체 scroll 이벤트 **** //
+
+        /* --------------------------------------------------------------------------------------
+            ***** fullpageFn 이벤트: 전체 페이지 scroll 또는 keyup 이벤트 발생 *****
+        -------------------------------------------------------------------------------------- */
         const fullpageFn = _.debounce((event) => {
             // 이동 전 저장할 변수
             const thisEl = document.querySelector('.section.current');
@@ -218,27 +253,10 @@ function Home() {
                 }
             }
 
-            // is fixed 상태가 true이면서 fix가 아닐때만 통과됨, 다시 is fixed는 false로
             if(direction === 'down') {
                 validationNextTarget();
             } else if(direction === 'up'){
                 validationPrevTarget();
-            }
-
-            let beforeIndex = sections.indexOf(thisEl); // 이동 후 인덱스 = currentIndex, 이동 전 인덱스 = beforeIndex
-            // fixSplash show
-            if((beforeIndex === 0 && direction === 'down') || (beforeIndex === 4 && direction === 'up')) {
-                fixSplash.style.display = 'block';
-                setTimeout(() => {
-                    fixSplash.style.opacity = 1;
-                }, 300);
-            }
-            // fixSplash hide
-            if((beforeIndex === 1 && direction === 'up') || (beforeIndex === 3 && direction === 'down')) {
-                fixSplash.style.opacity = '';
-                setTimeout(() => {
-                    fixSplash.style.display = '';
-                }, 300);
             }
             
             // 검증 후 결정 값으로 이동
@@ -253,7 +271,8 @@ function Home() {
             setAccumulate(tempAccumulate);
             setPageActive(currentIndex);
         }, scrollDelay)
-        
+       
+        /* mainActive === mainTotal 라는 전제하에 실행 */
         function handleScrollandKeyup(event) {
             // 이벤트 방향 저장
             if(event.type === 'wheel'){
@@ -272,8 +291,28 @@ function Home() {
                     direction = 'up';
                 }
             }
-            serviceFn(event);
+            /* 
+            pageActive 2라는 전제하에
+            appIntroActive 0이면서 위로 올라갈때,
+            appIntroActive maxlength이면서 아래로 내려갈때,
+            appIntroActive 가 0도, maxlength도 아닐때,
+            */
+           console.log(appIntroTotal, appIntroActive);
+           if(pageActive === 2) {
+                // console.log(direction, pageActive)
+                /* if((appIntroActive === 0 && direction === 'up') || (appIntroActive === appIntroTotal && direction === 'down')) {
+
+                } */
+                if(appIntroActive !== appIntroTotal) {
+                    return;
+                }
+                // if(appIntroActive !== appIntroTotal) {
+                // }
+            }
+
+            fixSplashFn(event);
             fixFn(event); // 대기시간 X = fix event
+            serviceFn(event); // 대기시간 O = service 페이지 event
             fullpageFn(event); // 대기시간 O = 전체 페이지 event
         }
         
@@ -296,21 +335,22 @@ function Home() {
             window.addEventListener('wheel', handleScrollandKeyup, { passive : true });
             window.addEventListener('keyup', handleScrollandKeyup);
         }
-        return() => {
+        
+      return() => {
             window.removeEventListener('wheel', handleScrollandKeyup);
             window.removeEventListener('keyup', handleScrollandKeyup);
             window.addEventListener('resize', handleRezise);
         }
-    }, [pageActive, mainActive, accumulate])
+    }, [pageActive, mainActive, appIntroActive, accumulate])
 
     // main last index check
-    const swiperSlideChange = (() => {
+    const mainSlideChange = (() => {
         if(mainActive === mainTotal) {
             main.autoplay.stop();
             setMainToggle(true);
         }
     })
-
+    
     // main swiper toggle
     const mainToggleOn = ((event) => {
         event.preventDefault();
@@ -366,7 +406,7 @@ function Home() {
             <Header />
             {/* container start -- */}
             <div id="container" className="main">
-                {/* 첫화면 */}
+                {/* [0] 첫화면 */}
                 <section className="section current">
                     <div className="visual">
                         {/* swiper start -- */}
@@ -393,7 +433,7 @@ function Home() {
                                     setMainTotal(swiper.slides.length);
                                 }}
                                 onSlideChangeTransitionEnd={(swiper) => {
-                                    swiperSlideChange(swiper);
+                                    mainSlideChange(swiper);
                                 }}
                             >
                                 {/* 슬라이드 생성된 경우 -> 렌더링 */}
@@ -424,7 +464,7 @@ function Home() {
                     </div>
                 </section>
 
-                {/* 1:1 피부 맞춤 솔루션 */}
+                {/* [1] 1:1 피부 맞춤 솔루션 */}
                 <section className="section">
                     <div className="solution">
                         <div className="right_area">
@@ -436,7 +476,7 @@ function Home() {
                     </div>
                 </section>
 
-                {/* ID.IM앱 사용하기 */}
+                {/* [2] ID.IM앱 사용하기 */}
                 <section className="section">
                     <div className="app_intro">
                         <div className="left_area">
@@ -460,6 +500,16 @@ function Home() {
                                 mousewheel={true}
                                 autoplay={false}
                                 modules={[ Navigation, Autoplay, Mousewheel ]}
+                                onSlideChange={(swiper) => {
+                                    setAppIntroActive(swiper.realIndex + 1);
+                                    console.log(swiper)
+                                }}
+                                onSwiper={(swiper) => {
+                                    setAppIntro(swiper);
+                                    setAppIntroActive(swiper.realIndex + 1);
+                                    setAppIntroTotal(swiper.slides.length);
+                                    console.log(swiper)
+                                }}
                             >
                                 <SwiperSlide className="slide slide1">
                                     <p className="lst_tit">Step. 01 <span>앱 다운로드</span></p>
@@ -499,7 +549,7 @@ function Home() {
                     </div>
                 </section>
 
-                {/* 서비스 */}
+                {/* [3] 서비스 */}
                 <section className="section">
                     <div className="service">
                         <div className="lst_data">
@@ -529,7 +579,7 @@ function Home() {
                     </div>
                 </section>
 
-                {/* 매거진 */}
+                {/* [4] 매거진 */}
                 <section className="section"> 
                     <div className="magazine">
                         {/* swiper start -- */}
@@ -597,7 +647,7 @@ function Home() {
                     </div>
                 </section>
 
-                {/* 앱다운로드 */}
+                {/* [5] 앱다운로드 */}
                 <section className="section">
                     <div className="app_download">
                         <div className="right_area">
@@ -614,7 +664,7 @@ function Home() {
                     </div>
                 </section>
 
-                {/* 뉴스레터 */}
+                {/* [6] 뉴스레터 */}
                 <section className="section auto_height">
                     <div className="news">
                         <p className="sec_tit logo"><span>ID.IM</span> NEWS LETTER</p>
@@ -638,6 +688,7 @@ function Home() {
                     </div>
                 </section>
                 
+                {/* [7] footer*/}
                 <section className="section auto_height">
                     <Footer />
                 </section>
