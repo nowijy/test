@@ -28,13 +28,10 @@ function Home() {
     const [accumulate, setAccumulate] = useState(0);
     /* swiper 관련 */
     const [main, setMain] = useState([]);
+    const [appIntro, setAppIntro] = useState([]);
     const [mainTotal, setMainTotal] = useState(0);
     const [mainActive, setMainActive] = useState(0);
     const [mainToggle, setMainToggle] = useState(false);
-    
-    const [appIntro, setAppIntro] = useState([]);
-    const [appIntroActive, setAppIntroActive] = useState(0);
-    const [appIntroTotal, setAppIntroTotal] = useState(0);
 
     useEffect(() => {
         console.log("실행 테스트");
@@ -272,6 +269,8 @@ function Home() {
             setPageActive(currentIndex);
         }, scrollDelay)
        
+        
+        let isAppIntro = null;
         /* mainActive === mainTotal 라는 전제하에 실행 */
         function handleScrollandKeyup(event) {
             // 이벤트 방향 저장
@@ -292,22 +291,29 @@ function Home() {
                 }
             }
             /* 
-            pageActive 2라는 전제하에
-            appIntroActive 0이면서 위로 올라갈때,
-            appIntroActive maxlength이면서 아래로 내려갈때,
-            appIntroActive 가 0도, maxlength도 아닐때,
+                pageActive 2라는 전제하에
+                appIntroActive 0이면서 위로 올라갈때,
+                appIntroActive maxlength이면서 아래로 내려갈때,
+                appIntroActive 가 0도, maxlength도 아닐때,
             */
-           console.log(appIntroTotal, appIntroActive);
-           if(pageActive === 2) {
-                // console.log(direction, pageActive)
-                /* if((appIntroActive === 0 && direction === 'up') || (appIntroActive === appIntroTotal && direction === 'down')) {
+            if (pageActive === 2) {
+                const swiperSlides = Array.from(document.querySelectorAll('section .app_intro .swiper .slide'));
+                const swiperLength = swiperSlides.length - 1;
+                const activeIndex = swiperSlides.indexOf(document.querySelector('section .app_intro .swiper .swiper-slide-active'));
+                // beforeIndex와 activeIndex에 차이가 없다면 slide이벤트가 일어나지 않은것으로 간주하고 바로 전체 슬라이드 이벤트 실행
+                // 모르겠다..
 
-                } */
-                if(appIntroActive !== appIntroTotal) {
-                    return;
+                if(!isAppIntro) {
+                    // 이동 가능한 사례: 첫번째와 마지막 인덱스,
+                    // 첫번쨰 한번은 넘겨주고, 두번째부터 실행되도록 retrun 하면서 isAppIntro = true로 바꿔줌
+                    if ((activeIndex === 0 && direction === 'up') || (activeIndex === swiperLength && direction === 'down')) {
+                        return isAppIntro = true;
+                    }
+                    // index number가 다른 사례: 아무것도 하지않도록 return
+                    if(activeIndex !== swiperLength) {
+                        return;
+                    }
                 }
-                // if(appIntroActive !== appIntroTotal) {
-                // }
             }
 
             fixSplashFn(event);
@@ -341,7 +347,7 @@ function Home() {
             window.removeEventListener('keyup', handleScrollandKeyup);
             window.addEventListener('resize', handleRezise);
         }
-    }, [pageActive, mainActive, appIntroActive, accumulate])
+    }, [pageActive, mainActive, accumulate])
 
     // main last index check
     const mainSlideChange = (() => {
@@ -426,6 +432,7 @@ function Home() {
                                 }}
                                 onSlideChange={(swiper) => {
                                     setMainActive(swiper.realIndex + 1);
+                                    console.log(swiper, '0번 swiper')
                                 }}
                                 onSwiper={(swiper) => {
                                     setMain(swiper);
@@ -499,16 +506,9 @@ function Home() {
                                 loop={false}
                                 mousewheel={true}
                                 autoplay={false}
-                                modules={[ Navigation, Autoplay, Mousewheel ]}
-                                onSlideChange={(swiper) => {
-                                    setAppIntroActive(swiper.realIndex + 1);
-                                    console.log(swiper)
-                                }}
-                                onSwiper={(swiper) => {
+                                modules={[Mousewheel]}
+                                onSwiper={(swiper) => { 
                                     setAppIntro(swiper);
-                                    setAppIntroActive(swiper.realIndex + 1);
-                                    setAppIntroTotal(swiper.slides.length);
-                                    console.log(swiper)
                                 }}
                             >
                                 <SwiperSlide className="slide slide1">
