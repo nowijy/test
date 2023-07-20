@@ -22,10 +22,14 @@ import _ from 'lodash';
 
 function Home() {
     /* home start -- */
-
     const [loading, setLoading] = useState(true);
     const [pageActive, setPageActive] = useState(0);
     const [accumulate, setAccumulate] = useState(0);
+    const [direction, setDirection] = useState(null);
+
+    /* active class 관련 */
+    const [sectionActiveList, setSectionActiveList] = useState(Array.from({length: 8}, () => false));
+
     /* swiper 관련 */
     const [main, setMain] = useState([]);
     const [appIntro, setAppIntro] = useState([]);
@@ -33,6 +37,13 @@ function Home() {
     const [mainActive, setMainActive] = useState(0);
     const [mainToggle, setMainToggle] = useState(false);
 
+    useEffect(() => {
+        // 0번째 section 활성화
+        let copy = sectionActiveList;
+        copy[0] = true;
+        setSectionActiveList(copy);
+    }, [])
+    
     useEffect(() => {
         console.log("실행 테스트");
         window.onbeforeunload = function() { // 페이지를 벗어나면서
@@ -63,11 +74,15 @@ function Home() {
             setPageActive(0);
 
             // .section current class 삭제 
-            for(var i = 0; document.querySelectorAll('.section').length > i; i++){
-                document.querySelectorAll('.section')[i].classList.remove('current');
+            // 0번째 section 활성화
+            let copy = sectionActiveList;
+            for(var i = 0; copy.length > i; i++){
+                copy[i] = false;
             }
             // .section[0] current class 추가
-            document.querySelectorAll('.section')[0].classList.add('current');
+            copy[0] = true;
+            setSectionActiveList(copy);
+
         }
         btnTop.addEventListener('click', btnTopMove);
         return() => {
@@ -77,29 +92,22 @@ function Home() {
 
 
 
-    
-    // pageActive 이벤트
     useEffect(() => {        
         // console.log(pageActive, 'pageActive')
-        const wrap = document.querySelector('#wrap');
-        wrap.classList.add('slide_on'); 
+        // const wrap = document.querySelector('#wrap');
+        // wrap.classList.add('slide_on'); 
         
-        const fix = document.querySelector('.fix');
-        fix.className = 'fix'; // fix class 원위치
+        // const fix = document.querySelector('.fix');
+        // fix.className = 'fix'; // fix class 원위치
 
-        const on = 'on'; // section active class명, on은 지워지지 않고 그대로 유지
-        let selectSection = document.querySelectorAll('.section')[pageActive];
-        selectSection.getElementsByTagName('div')[0].classList.add(on); // 가장 첫번째 div에 on
+        // const on = 'on'; // section active class명, on은 지워지지 않고 그대로 유지
+        // let selectSection = document.querySelectorAll('.section')[pageActive];
+        // selectSection.getElementsByTagName('div')[0].classList.add(on); // 가장 첫번째 div에 on
         
-        if (pageActive === 0) {
+        /* ㅇ니ㅏ어널너이ㅏ 꼭 추가하기 */
+        /* if (pageActive === 0) {
             wrap.classList.remove('slide_on');
-        } else if(pageActive === 2) {
-            document.querySelector('.fix').classList.add('second_on');
-        } else if(pageActive === 3) {
-            document.querySelector('.fix').classList.add('third_on');
-        } else if(pageActive === 4) {
-            document.querySelector('.fix').classList.add('last_on');
-        }
+        } */
     }, [pageActive])
 
 
@@ -114,32 +122,36 @@ function Home() {
 
         const scrollDelay = 400; // 대기
         const scrollSpeed = 1000; // 속도
-        let direction = null; // 이벤트 방향 체크
+        // let direction = null; // 이벤트 방향 체크
         
-        // **** fixed 이벤트 **** //
+        // **** fixed 이벤트: pageActive 바뀔때마다 발생 **** //
         let isFixed = null; // fixed scroll 이벤트 체크
-        const fixSplashFn = _.debounce((event) => {
-            const fix = document.querySelector('.fix');
+        const fixSplashFn = (() => {
             const fixSplash = document.querySelector('.fix .splash');
-            // let beforeIndex = sections.indexOf(thisEl); // 이동 후 인덱스 = currentIndex, 이동 전 인덱스 = beforeIndex
+            // pageActive 변경될때마다 스크롤 원위치
+            document.querySelector('.fix .splash .img_area').scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
             // fixSplash show
             if((pageActive === 0 && direction === 'down') || (pageActive === 4 && direction === 'up')) {
                 fixSplash.style.display = 'block';
                 setTimeout(() => {
                     fixSplash.style.opacity = 1;
-                }, 300);
+                }, 100);
             }
             // fixSplash hide
-            if((pageActive === 1 && direction === 'up') || (pageActive === 3 && direction === 'down')) {
+            /* if((pageActive === 1 && direction === 'up') || (pageActive === 3 && direction === 'down')) {
                 fixSplash.style.opacity = '';
                 setTimeout(() => {
                     fixSplash.style.display = '';
-                }, 300);
-            }
-        }, scrollDelay)
+                }, 100);
+            }  */  
+        })
+        fixSplashFn();
 
         /* --------------------------------------------------------------------------------------
-            ***** fixFn 이벤트: splash 안에서 scroll 또는 keyup 이벤트 발생 *****
+            ***** 순서 1 - fixFn 이벤트: splash 안에서 scroll 또는 keyup 이벤트 발생 *****
         -------------------------------------------------------------------------------------- */
         // fullpageFn 이벤트 시간과 맞지 않아서 FixFn 분리
         const fixFn = ((event) => {
@@ -162,7 +174,7 @@ function Home() {
         })
 
         /* --------------------------------------------------------------------------------------
-            ***** serviceFn 이벤트: service 안에서 scroll 또는 keyup 이벤트 발생 *****
+            ***** 순서 2 - serviceFn 이벤트: service 안에서 scroll 또는 keyup 이벤트 발생 *****
         -------------------------------------------------------------------------------------- */
         let serviceNum = -1; // 기본값
         let isService = null; // service scroll 이벤트 체크
@@ -188,27 +200,31 @@ function Home() {
                 }
                 
                 // lst_data li에서 전체 on 삭제, 해당 li에만 on class 추가
-                for(let i = 0; serviceList.length > i; i++) { 
-                    serviceList[i].classList.remove('on');
+                let copy = sectionActiveList;
+                for(let i = 0; copy.length > i; i++) { 
+                    // serviceList[i].classList.remove('on');
+                    copy[i] = false;
                 }
                 if(serviceNum === -1) { // -1인 경우 bg class 삭제
-                    document.querySelector('.section .service .lst_data ul').className = '';
+                    // document.querySelector('.section .service .lst_data ul').className = '';
                 }
                 if(serviceList?.[serviceNum]) { // 0~3 존재하는 경우 class 추가, bg class 수정
-                    serviceList[serviceNum].classList.add('on');
-                    document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1); // (1~4까지)
+                    // serviceList[serviceNum].classList.add('on');
+                    copy[serviceNum] = true;
+                    // document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1); // (1~4까지)
                 }
+                setSectionActiveList(copy);
             }
         }, scrollDelay)
 
         /* --------------------------------------------------------------------------------------
-            ***** fullpageFn 이벤트: 전체 페이지 scroll 또는 keyup 이벤트 발생 *****
+            ***** 순서 3 - fullpageFn 이벤트: 전체 페이지 scroll 또는 keyup 이벤트 발생 *****
         -------------------------------------------------------------------------------------- */
         const fullpageFn = _.debounce((event) => {
             // 이동 전 저장할 변수
             const thisEl = document.querySelector('.section.current');
             // 이동 후 위치의 대상 저장할 변수
-            let targetEl = thisEl;
+            let targetEl;
             
             // speed set
             const container = document.querySelector('#container');
@@ -223,7 +239,7 @@ function Home() {
             // isService가 false이면서 .service 부모 section이 current인 경우 실행X
             if(!isService && document.querySelector('.section.current .service')) { 
                 return;
-            }
+            }  
             
             // 이전 타깃 검증
             function validationPrevTarget() {
@@ -248,8 +264,10 @@ function Home() {
                         tempAccumulate -= gap;
                     }
                 }
+
             }
 
+           
             if(direction === 'down') {
                 validationNextTarget();
             } else if(direction === 'up'){
@@ -259,11 +277,15 @@ function Home() {
             // 검증 후 결정 값으로 이동
             container.style.transform = `translateY(-${tempAccumulate}px)`;
             // .section = .current 전체 삭제, target .current 추가
-            for(var i = 0; document.querySelectorAll('.section').length > i; i++){
-                document.querySelectorAll('.section')[i].classList.remove('current');
+            let copy = sectionActiveList;
+            for(var i = 0; copy.length > i; i++){
+                // sections[i].classList.remove('current');
+                copy[i] = false;
             }
-            targetEl.classList.add('current');
+            // targetEl.classList.add('current');
             const currentIndex = sections.indexOf(targetEl);
+            copy[currentIndex] = true;
+            setSectionActiveList(copy);
 
             setAccumulate(tempAccumulate);
             setPageActive(currentIndex);
@@ -276,47 +298,45 @@ function Home() {
             // 이벤트 방향 저장
             if(event.type === 'wheel'){
                 if(event.deltaY > 0) { // scroll Down
-                    direction = 'down';
+                    setDirection('down');
                 } else if(event.deltaY < 0) { // scroll Up
-                    direction = 'up';
+                    setDirection('up');
                 }
             }
             // keyup event
             if(event.type === 'keyup'){
                 if (event.isComposing || event.keyCode === 40) {
-                    direction = 'down';
+                    setDirection('down');
                 }
                 if (event.isComposing || event.keyCode === 38) {
-                    direction = 'up';
+                    setDirection('up');
                 }
             }
             /* 
                 pageActive 2라는 전제하에
-                appIntroActive 0이면서 위로 올라갈때,
-                appIntroActive maxlength이면서 아래로 내려갈때,
-                appIntroActive 가 0도, maxlength도 아닐때,
+                beforeIndex가 없을때,
+                activeIndex 0이면서 위로 올라갈때,
+                activeIndex maxlength이면서 아래로 내려갈때,
+                activeIndex 가 0도, maxlength도 아닐때,
             */
             if (pageActive === 2) {
-                const swiperSlides = Array.from(document.querySelectorAll('section .app_intro .swiper .slide'));
-                const swiperLength = swiperSlides.length - 1;
-                const activeIndex = swiperSlides.indexOf(document.querySelector('section .app_intro .swiper .swiper-slide-active'));
-                // beforeIndex와 activeIndex에 차이가 없다면 slide이벤트가 일어나지 않은것으로 간주하고 바로 전체 슬라이드 이벤트 실행
-                // 모르겠다..
-
+                const beforeIndex = appIntro.previousIndex;
+                const activeIndex = appIntro.activeIndex;
+                const appIntroSlides = appIntro.slides;
+                const appIntroTotal = appIntroSlides.length - 1;
+                
+                // swiper 이동한적이 없으면 전체 슬라이드 이벤트 바로 적용
+                if(beforeIndex === 'undefined') {
+                    isAppIntro = true;
+                }
                 if(!isAppIntro) {
-                    // 이동 가능한 사례: 첫번째와 마지막 인덱스,
-                    // 첫번쨰 한번은 넘겨주고, 두번째부터 실행되도록 retrun 하면서 isAppIntro = true로 바꿔줌
-                    if ((activeIndex === 0 && direction === 'up') || (activeIndex === swiperLength && direction === 'down')) {
+                    if ((activeIndex === 0 && direction === 'up') || (activeIndex === appIntroTotal && direction === 'down')) {
                         return isAppIntro = true;
                     }
-                    // index number가 다른 사례: 아무것도 하지않도록 return
-                    if(activeIndex !== swiperLength) {
-                        return;
-                    }
+                    return;
                 }
             }
 
-            fixSplashFn(event);
             fixFn(event); // 대기시간 X = fix event
             serviceFn(event); // 대기시간 O = service 페이지 event
             fullpageFn(event); // 대기시간 O = 전체 페이지 event
@@ -336,18 +356,18 @@ function Home() {
         };
         window.addEventListener('resize', handleRezise);
     
-        // main last 아닐경우 event 발동X
+        // main last 아닐경우 event 기능X
         if(mainActive === mainTotal) {
             window.addEventListener('wheel', handleScrollandKeyup, { passive : true });
             window.addEventListener('keyup', handleScrollandKeyup);
         }
         
-      return() => {
+        return() => {
             window.removeEventListener('wheel', handleScrollandKeyup);
             window.removeEventListener('keyup', handleScrollandKeyup);
             window.addEventListener('resize', handleRezise);
         }
-    }, [pageActive, mainActive, accumulate])
+    }, [pageActive, mainActive, accumulate, direction])
 
     // main last index check
     const mainSlideChange = (() => {
@@ -413,8 +433,8 @@ function Home() {
             {/* container start -- */}
             <div id="container" className="main">
                 {/* [0] 첫화면 */}
-                <section className="section current">
-                    <div className="visual">
+                <section className={`section${sectionActiveList[0] ? ' current' : ''}`}>
+                    <div className={`visual${sectionActiveList[0] ? ' on' : ''}`}>
                         {/* swiper start -- */}
                         <div className="swiper swiper-container">
                             <Swiper
@@ -432,7 +452,6 @@ function Home() {
                                 }}
                                 onSlideChange={(swiper) => {
                                     setMainActive(swiper.realIndex + 1);
-                                    console.log(swiper, '0번 swiper')
                                 }}
                                 onSwiper={(swiper) => {
                                     setMain(swiper);
@@ -472,8 +491,8 @@ function Home() {
                 </section>
 
                 {/* [1] 1:1 피부 맞춤 솔루션 */}
-                <section className="section">
-                    <div className="solution">
+                <section className={`section${sectionActiveList[1] ? ' current' : ''}`}>
+                    <div className={`solution${sectionActiveList[1] ? ' on' : ''}`}>
                         <div className="right_area">
                             <p className="sec_tit">Better way to</p>
                             <p className="sec_tit logo">better me. <span>ID.IM</span></p>
@@ -484,8 +503,8 @@ function Home() {
                 </section>
 
                 {/* [2] ID.IM앱 사용하기 */}
-                <section className="section">
-                    <div className="app_intro">
+                <section className={`section${sectionActiveList[2] ? ' current' : ''}`}>
+                    <div className={`app_intro${sectionActiveList[2] ? ' on' : ''}`}>
                         <div className="left_area">
                             <p className="sec_tit">Step your</p>
                             <p className="sec_tit logo">Beauty up! <span>ID.IM</span></p>
@@ -509,6 +528,10 @@ function Home() {
                                 modules={[Mousewheel]}
                                 onSwiper={(swiper) => { 
                                     setAppIntro(swiper);
+                                }}
+                                onSlideChangeTransitionStart={(swiper) =>{
+                                    setAppIntro(swiper);
+                                    swiper.slides[swiper.previousIndex].classList.add('opacity_on');
                                 }}
                             >
                                 <SwiperSlide className="slide slide1">
@@ -550,8 +573,8 @@ function Home() {
                 </section>
 
                 {/* [3] 서비스 */}
-                <section className="section">
-                    <div className="service">
+                <section className={`section${sectionActiveList[3] ? ' current' : ''}`}>
+                    <div className={`service${sectionActiveList[3] ? ' on' : ''}`}>
                         <div className="lst_data">
                             <ul>
                                 <li>
@@ -580,8 +603,8 @@ function Home() {
                 </section>
 
                 {/* [4] 매거진 */}
-                <section className="section"> 
-                    <div className="magazine">
+                <section className={`section${sectionActiveList[4] ? ' current' : ''}`}>
+                    <div className={`magazine${sectionActiveList[4] ? ' on' : ''}`}>
                         {/* swiper start -- */}
                         안뇨쇼
                         {/* <div className="swiper">
@@ -648,8 +671,8 @@ function Home() {
                 </section>
 
                 {/* [5] 앱다운로드 */}
-                <section className="section">
-                    <div className="app_download">
+                <section className={`section${sectionActiveList[5] ? ' current' : ''}`}>
+                    <div className={`app_download${sectionActiveList[5] ? ' on' : ''}`}>
                         <div className="right_area">
                             <p className="sec_tit logo">나의 첫 맞춤 케어, <span>ID.IM</span></p>
                             <p className="sec_txt">지금 ID.IM 구독하고 DNA 검사를 무료로 받아보세요!</p>
@@ -665,8 +688,8 @@ function Home() {
                 </section>
 
                 {/* [6] 뉴스레터 */}
-                <section className="section auto_height">
-                    <div className="news">
+                <section className={`section auto_height${sectionActiveList[6] ? ' current' : ''}`}>
+                    <div className={`news${sectionActiveList[6] ? ' on' : ''}`}>
                         <p className="sec_tit logo"><span>ID.IM</span> NEWS LETTER</p>
                         <p className="sec_txt">뉴스레터 구독하고, ID.IM의 새로운 소식을 만나보세요.</p>
 
@@ -689,14 +712,22 @@ function Home() {
                 </section>
                 
                 {/* [7] footer*/}
-                <section className="section auto_height">
+                <section className={`section auto_height${sectionActiveList[7] ? ' current' : ''}`}>
                     <Footer />
                 </section>
             </div>
             {/* -- container end */}
 
             {/* fix start*/}
-            <div className="fix">
+            <div className={
+                `fix 
+                    ${
+                        sectionActiveList[2] ? 'second_on' :
+                        sectionActiveList[3] ? 'third_on' :
+                        sectionActiveList[4] ? 'last_on' : ''
+                    }
+                `
+            }>
                 {/* splash */}
                 <div className="splash">
                     <div className="splash_hd">
