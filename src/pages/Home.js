@@ -225,7 +225,9 @@ function Home() {
             const thisEl = document.querySelector('.section.current');
             // 이동 후 위치의 대상 저장할 변수
             let targetEl;
-            
+            let copy = sectionActiveList;
+            let currentIndex = sections.indexOf(targetEl); // 이동전 인덱스
+            console.log(copy[currentIndex + 1])
             // speed set
             const container = document.querySelector('#container');
             container.style.transition = `transform ${scrollSpeed}ms ease`; 
@@ -242,7 +244,7 @@ function Home() {
             }  
             
             // 이전 타깃 검증
-            function validationPrevTarget() {
+            /* function validationPrevTarget() {
                 if(thisEl.previousSibling) { // 이전 section이 있다면
                     targetEl = thisEl.previousSibling;
                     tempAccumulate -= thisEl.scrollHeight; // 현재 타겟 높이만큼 - 이동
@@ -251,9 +253,9 @@ function Home() {
                         tempAccumulate = 0;
                     }
                 }
-            }
+            } */
             // 다음 타깃 검증
-            function validationNextTarget() { 
+            /* function validationNextTarget() { 
                 if(thisEl.nextSibling) { // 다음 section이 있다면
                     targetEl = thisEl.nextSibling;
                     tempAccumulate += targetEl.scrollHeight; // 다음 타겟 높이만큼 + 이동
@@ -265,25 +267,24 @@ function Home() {
                     }
                 }
 
-            }
+            } */
 
            
-            if(direction === 'down') {
+           /*  if(direction === 'down') {
                 validationNextTarget();
             } else if(direction === 'up'){
                 validationPrevTarget();
-            }
+            } */
             
             // 검증 후 결정 값으로 이동
             container.style.transform = `translateY(-${tempAccumulate}px)`;
             // .section = .current 전체 삭제, target .current 추가
-            let copy = sectionActiveList;
+            
             for(var i = 0; copy.length > i; i++){
                 // sections[i].classList.remove('current');
                 copy[i] = false;
             }
             // targetEl.classList.add('current');
-            const currentIndex = sections.indexOf(targetEl);
             copy[currentIndex] = true;
             setSectionActiveList(copy);
 
