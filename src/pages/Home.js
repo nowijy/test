@@ -44,6 +44,7 @@ function Home() {
         setSectionActiveList(copy);
     }, [])
     
+    // 새로고침
     useEffect(() => {
         console.log("실행 테스트");
         window.onbeforeunload = function() { // 페이지를 벗어나면서
@@ -115,7 +116,6 @@ function Home() {
 
     // scroll, keyup 이벤트
     useEffect(() => {
-        const sections = Array.from(document.querySelectorAll('.section'));
         // const currentSection = document.querySelector('.section.current') || document.querySelectorAll('.section')[0].classList.add('current'); 
         // let currentIndex = sections.indexOf(currentSection);
         // setPageActive(currentIndex);
@@ -141,12 +141,12 @@ function Home() {
                 }, 100);
             }
             // fixSplash hide
-            /* if((pageActive === 1 && direction === 'up') || (pageActive === 3 && direction === 'down')) {
+            if((pageActive === 1 && direction === 'up') || (pageActive === 3 && direction === 'down')) {
                 fixSplash.style.opacity = '';
                 setTimeout(() => {
                     fixSplash.style.display = '';
                 }, 100);
-            }  */  
+            }   
         })
         fixSplashFn();
 
@@ -180,7 +180,7 @@ function Home() {
         let isService = null; // service scroll 이벤트 체크
         // isService true 상태로 fullpageFn 통과 후, 이벤트 다시 타면서 isService는 다시 null임 
         const serviceFn = _.debounce((event) => {
-            if(!isService && document.querySelector('.section.current .service')) {
+            if(!isService && sectionActiveList[3] === true) {
                 const serviceList = Array.from(document.querySelectorAll('.section .service .lst_data li'));
                 serviceNum = serviceList.indexOf(document.querySelector('.section .service .lst_data li.on'));
                 // lst_data li 중에 on이 있는지 확인, 없으면 -1 반환 
@@ -200,20 +200,17 @@ function Home() {
                 }
                 
                 // lst_data li에서 전체 on 삭제, 해당 li에만 on class 추가
-                let copy = sectionActiveList;
-                for(let i = 0; copy.length > i; i++) { 
+                for(let i = 0; serviceList.length > i; i++) { 
                     // serviceList[i].classList.remove('on');
-                    copy[i] = false;
                 }
                 if(serviceNum === -1) { // -1인 경우 bg class 삭제
                     // document.querySelector('.section .service .lst_data ul').className = '';
                 }
-                if(serviceList?.[serviceNum]) { // 0~3 존재하는 경우 class 추가, bg class 수정
+                if(serviceList[serviceNum]) { // 0~3 존재하는 경우 class 추가, bg class 수정
                     // serviceList[serviceNum].classList.add('on');
-                    copy[serviceNum] = true;
+                    // copy[serviceNum] = true;
                     // document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1); // (1~4까지)
                 }
-                setSectionActiveList(copy);
             }
         }, scrollDelay)
 
@@ -221,13 +218,19 @@ function Home() {
             ***** 순서 3 - fullpageFn 이벤트: 전체 페이지 scroll 또는 keyup 이벤트 발생 *****
         -------------------------------------------------------------------------------------- */
         const fullpageFn = _.debounce((event) => {
-            // 이동 전 저장할 변수
-            const thisEl = document.querySelector('.section.current');
-            // 이동 후 위치의 대상 저장할 변수
-            let targetEl;
+            const sections = Array.from(document.querySelectorAll('.section'));
             let copy = sectionActiveList;
-            let currentIndex = sections.indexOf(targetEl); // 이동전 인덱스
-            console.log(copy[currentIndex + 1])
+            let thisEl; // 이동 전 저장할 변수
+            let targetEl; // 이동 후 위치의 대상 저장할 변수
+            let currentIndex;
+            for(let i = 0; copy.length > i; i++) { 
+                if(copy[i] === true) {
+                    currentIndex = i;
+                    thisEl = sections[i];
+                    break;
+                }
+            }
+           
             // speed set
             const container = document.querySelector('#container');
             container.style.transition = `transform ${scrollSpeed}ms ease`; 
@@ -237,27 +240,30 @@ function Home() {
             if(!isFixed && event.target.closest('.fix')) {  
                 return;
             }
-            
             // isService가 false이면서 .service 부모 section이 current인 경우 실행X
             if(!isService && document.querySelector('.section.current .service')) { 
                 return;
             }  
             
             // 이전 타깃 검증
-            /* function validationPrevTarget() {
-                if(thisEl.previousSibling) { // 이전 section이 있다면
-                    targetEl = thisEl.previousSibling;
+            function validationPrevTarget() {
+                if(copy[currentIndex - 1] !== 'undefined') { // 이전 section이 있다면
+                    // targetEl = thisEl.previousSibling;
+                    currentIndex -= 1; // currentIndex 업데이트
+                    targetEl = sections[currentIndex - 1]; // 이전 타겟 저장
                     tempAccumulate -= thisEl.scrollHeight; // 현재 타겟 높이만큼 - 이동
                     // 최소 tranform 가능한 0보다 작다면 0으로 set
                     if(tempAccumulate < 0) {
                         tempAccumulate = 0;
                     }
                 }
-            } */
+            }
             // 다음 타깃 검증
-            /* function validationNextTarget() { 
-                if(thisEl.nextSibling) { // 다음 section이 있다면
-                    targetEl = thisEl.nextSibling;
+            function validationNextTarget() { 
+                if(copy[currentIndex + 1] !== 'undefined') { // 다음 section이 있다면
+                    // targetEl = thisEl.nextSibling; 
+                    currentIndex += 1;
+                    targetEl = sections[currentIndex + 1]; // 다음 타겟 저장
                     tempAccumulate += targetEl.scrollHeight; // 다음 타겟 높이만큼 + 이동
                     // 최대 transform 전체높이보다 크다면
                     if(tempAccumulate > (container.scrollHeight - window.innerHeight)) {
@@ -267,14 +273,14 @@ function Home() {
                     }
                 }
 
-            } */
+            }
 
            
-           /*  if(direction === 'down') {
+            if(direction === 'down') {
                 validationNextTarget();
             } else if(direction === 'up'){
                 validationPrevTarget();
-            } */
+            }
             
             // 검증 후 결정 값으로 이동
             container.style.transform = `translateY(-${tempAccumulate}px)`;
@@ -284,12 +290,13 @@ function Home() {
                 // sections[i].classList.remove('current');
                 copy[i] = false;
             }
-            // targetEl.classList.add('current');
-            copy[currentIndex] = true;
-            setSectionActiveList(copy);
 
             setAccumulate(tempAccumulate);
             setPageActive(currentIndex);
+
+            // targetEl.classList.add('current');
+            copy[currentIndex] = true;
+            setSectionActiveList(copy); // class 업데이트
         }, scrollDelay)
        
         
@@ -434,8 +441,8 @@ function Home() {
             {/* container start -- */}
             <div id="container" className="main">
                 {/* [0] 첫화면 */}
-                <section className={`section${sectionActiveList[0] ? ' current' : ''}`}>
-                    <div className={`visual${sectionActiveList[0] ? ' on' : ''}`}>
+                <section className={`section ${sectionActiveList[0] ? 'current' : ''}`}>
+                    <div className={`visual ${sectionActiveList[0] ? 'on' : ''}`}>
                         {/* swiper start -- */}
                         <div className="swiper swiper-container">
                             <Swiper
@@ -492,8 +499,8 @@ function Home() {
                 </section>
 
                 {/* [1] 1:1 피부 맞춤 솔루션 */}
-                <section className={`section${sectionActiveList[1] ? ' current' : ''}`}>
-                    <div className={`solution${sectionActiveList[1] ? ' on' : ''}`}>
+                <section className={`section ${sectionActiveList[1] ? 'current' : ''}`}>
+                    <div className={`solution ${sectionActiveList[1] ? 'on' : ''}`}>
                         <div className="right_area">
                             <p className="sec_tit">Better way to</p>
                             <p className="sec_tit logo">better me. <span>ID.IM</span></p>
@@ -504,8 +511,8 @@ function Home() {
                 </section>
 
                 {/* [2] ID.IM앱 사용하기 */}
-                <section className={`section${sectionActiveList[2] ? ' current' : ''}`}>
-                    <div className={`app_intro${sectionActiveList[2] ? ' on' : ''}`}>
+                <section className={`section ${sectionActiveList[2] ? 'current' : ''}`}>
+                    <div className={`app_intro ${sectionActiveList[2] ? 'on' : ''}`}>
                         <div className="left_area">
                             <p className="sec_tit">Step your</p>
                             <p className="sec_tit logo">Beauty up! <span>ID.IM</span></p>
@@ -574,8 +581,8 @@ function Home() {
                 </section>
 
                 {/* [3] 서비스 */}
-                <section className={`section${sectionActiveList[3] ? ' current' : ''}`}>
-                    <div className={`service${sectionActiveList[3] ? ' on' : ''}`}>
+                <section className={`section ${sectionActiveList[3] ? 'current' : ''}`}>
+                    <div className={`service ${sectionActiveList[3] ? 'on' : ''}`}>
                         <div className="lst_data">
                             <ul>
                                 <li>
@@ -604,8 +611,8 @@ function Home() {
                 </section>
 
                 {/* [4] 매거진 */}
-                <section className={`section${sectionActiveList[4] ? ' current' : ''}`}>
-                    <div className={`magazine${sectionActiveList[4] ? ' on' : ''}`}>
+                <section className={`section ${sectionActiveList[4] ? 'current' : ''}`}>
+                    <div className={`magazine ${sectionActiveList[4] ? 'on' : ''}`}>
                         {/* swiper start -- */}
                         안뇨쇼
                         {/* <div className="swiper">
@@ -672,8 +679,8 @@ function Home() {
                 </section>
 
                 {/* [5] 앱다운로드 */}
-                <section className={`section${sectionActiveList[5] ? ' current' : ''}`}>
-                    <div className={`app_download${sectionActiveList[5] ? ' on' : ''}`}>
+                <section className={`section ${sectionActiveList[5] ? 'current' : ''}`}>
+                    <div className={`app_download ${sectionActiveList[5] ? 'on' : ''}`}>
                         <div className="right_area">
                             <p className="sec_tit logo">나의 첫 맞춤 케어, <span>ID.IM</span></p>
                             <p className="sec_txt">지금 ID.IM 구독하고 DNA 검사를 무료로 받아보세요!</p>
@@ -689,8 +696,8 @@ function Home() {
                 </section>
 
                 {/* [6] 뉴스레터 */}
-                <section className={`section auto_height${sectionActiveList[6] ? ' current' : ''}`}>
-                    <div className={`news${sectionActiveList[6] ? ' on' : ''}`}>
+                <section className={`section auto_height ${sectionActiveList[6] ? 'current' : ''}`}>
+                    <div className={`news ${sectionActiveList[6] ? 'on' : ''}`}>
                         <p className="sec_tit logo"><span>ID.IM</span> NEWS LETTER</p>
                         <p className="sec_txt">뉴스레터 구독하고, ID.IM의 새로운 소식을 만나보세요.</p>
 
@@ -713,7 +720,7 @@ function Home() {
                 </section>
                 
                 {/* [7] footer*/}
-                <section className={`section auto_height${sectionActiveList[7] ? ' current' : ''}`}>
+                <section className={`section auto_height ${sectionActiveList[7] ? 'current' : ''}`}>
                     <Footer />
                 </section>
             </div>
