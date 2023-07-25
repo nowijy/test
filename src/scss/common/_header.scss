@@ -92,6 +92,7 @@
 
     &.third_on{
         .splash{
+            background: #b9bbbf url('/images/sample/main_service_off.jpg') no-repeat center/cover;
             z-index: -1;
             width: 100%;
             height: 100%;
@@ -140,7 +141,7 @@
         border-radius: 44px;
         box-shadow: 14px 23px 27px 0px rgba(0, 0, 0, 0.06);
         transition: all .3s ease;
-        &::after{
+        /* &::after{
             content: '';
             display: none;
             position: absolute;
@@ -150,7 +151,7 @@
             height: 100%;
             background: #b9bbbf url('/images/sample/main_service_off.jpg') no-repeat center/cover;
             transition: all .3s ease;
-        }
+        } */
 
         .splash_hd{
             position: absolute;

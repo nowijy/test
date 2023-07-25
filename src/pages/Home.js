@@ -29,7 +29,7 @@ function Home() {
 
     /* active class 관련 */
     const [sectionActiveList, setSectionActiveList] = useState(Array.from({length: 8}, () => false));
-
+    const [serviceActiveList, setServiceActiveList] = useState(Array.from({length: 4}, () => false));
     /* swiper 관련 */
     const [main, setMain] = useState([]);
     const [appIntro, setAppIntro] = useState([]);
@@ -55,9 +55,9 @@ function Home() {
         }
         document.body.style.overflow = 'hidden'; 
 
-        setTimeout(() => {
-            setLoading(false); // 로딩 완료
-        }, 300)
+        setLoading(false); // 로딩 완료
+        /* setTimeout(() => {
+        }, 300) */
         return () => {
             window.onbeforeunload = null; // 이벤트 반환
         };
@@ -116,37 +116,26 @@ function Home() {
 
     // scroll, keyup 이벤트
     useEffect(() => {
-        // const currentSection = document.querySelector('.section.current') || document.querySelectorAll('.section')[0].classList.add('current'); 
-        // let currentIndex = sections.indexOf(currentSection);
-        // setPageActive(currentIndex);
-
         const scrollDelay = 400; // 대기
         const scrollSpeed = 1000; // 속도
-        // let direction = null; // 이벤트 방향 체크
         
         // **** fixed 이벤트: pageActive 바뀔때마다 발생 **** //
-        let isFixed = null; // fixed scroll 이벤트 체크
         const fixSplashFn = (() => {
-            const fixSplash = document.querySelector('.fix .splash');
-            // pageActive 변경될때마다 스크롤 원위치
-            document.querySelector('.fix .splash .img_area').scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
+            const fixSplash = document.querySelector('.fix .splash');        
             // fixSplash show
-            if((pageActive === 0 && direction === 'down') || (pageActive === 4 && direction === 'up')) {
+            if((sectionActiveList[1] && direction === 'down') || (sectionActiveList[4] && direction === 'up')) {
                 fixSplash.style.display = 'block';
                 setTimeout(() => {
-                    fixSplash.style.opacity = 1;
-                }, 100);
+                    fixSplash.style.opacity = 1;    
+                }, 300);
             }
             // fixSplash hide
-            if((pageActive === 1 && direction === 'up') || (pageActive === 3 && direction === 'down')) {
+            if((sectionActiveList[1] && direction === 'up') || (sectionActiveList[4] && direction === 'down')) {
                 fixSplash.style.opacity = '';
                 setTimeout(() => {
                     fixSplash.style.display = '';
-                }, 100);
-            }   
+                }, 300);
+            }
         })
         fixSplashFn();
 
@@ -154,13 +143,20 @@ function Home() {
             ***** 순서 1 - fixFn 이벤트: splash 안에서 scroll 또는 keyup 이벤트 발생 *****
         -------------------------------------------------------------------------------------- */
         // fullpageFn 이벤트 시간과 맞지 않아서 FixFn 분리
+        let isFixed = null; // fixed scroll 이벤트 체크
         const fixFn = ((event) => {
             // isFixed false이면서 이벤트 타겟이 fix 인경우
             if(!isFixed && event.target.closest('.fix')) { 
                 const fixImgarea = document.querySelector('.fix .img_area');
+                /* fixImgarea.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                }); */
+
                 let offsetTop = fixImgarea.scrollTop;
                 let offsetBottom = fixImgarea.scrollHeight - fixImgarea.scrollTop;
-                if(offsetTop === 0  && direction === 'up'){
+
+                if(offsetTop === 0 && direction === 'up'){
                     if(!isFixed) { // fixIs true 아니면
                         return isFixed = true; // fixIs true로 변경, return 다음 이벤트 실행 X
                     }
@@ -179,16 +175,17 @@ function Home() {
         let serviceNum = -1; // 기본값
         let isService = null; // service scroll 이벤트 체크
         // isService true 상태로 fullpageFn 통과 후, 이벤트 다시 타면서 isService는 다시 null임 
-        const serviceFn = _.debounce((event) => {
+        /* const serviceFn = _.debounce((event) => {
             if(!isService && sectionActiveList[3] === true) {
-                const serviceList = Array.from(document.querySelectorAll('.section .service .lst_data li'));
-                serviceNum = serviceList.indexOf(document.querySelector('.section .service .lst_data li.on'));
+                let copy = serviceActiveList;
+                // const serviceList = Array.from(document.querySelectorAll('.section .service .lst_data li'));
+                // serviceNum = serviceList.indexOf(document.querySelector('.section .service .lst_data li.on'));
                 // lst_data li 중에 on이 있는지 확인, 없으면 -1 반환 
                 
                 if(direction === 'down') {
-                    if(serviceNum < (serviceList.length - 1)) { // 3보다 작은 경우에만
+                    if(serviceNum < (copy.length - 1)) { // 3보다 작은 경우에만
                         serviceNum += 1;
-                    } else if(serviceNum === (serviceList.length - 1)) { // 3과 같은 경우
+                    } else if(serviceNum === (copy.length - 1)) { // 3과 같은 경우
                         return isService = true; // 다음 섹션으로 이동 허가
                     }
                 } else if(direction === 'up') { // -1보다 큰 경우에만
@@ -200,20 +197,20 @@ function Home() {
                 }
                 
                 // lst_data li에서 전체 on 삭제, 해당 li에만 on class 추가
-                for(let i = 0; serviceList.length > i; i++) { 
+                for(let i = 0; copy.length > i; i++) { 
                     // serviceList[i].classList.remove('on');
                 }
                 if(serviceNum === -1) { // -1인 경우 bg class 삭제
                     // document.querySelector('.section .service .lst_data ul').className = '';
                 }
-                if(serviceList[serviceNum]) { // 0~3 존재하는 경우 class 추가, bg class 수정
+                if(copy[serviceNum]) { // 0~3 존재하는 경우 class 추가, bg class 수정
                     // serviceList[serviceNum].classList.add('on');
                     // copy[serviceNum] = true;
                     // document.querySelector('.section .service .lst_data ul').className = 'bg' + (serviceNum + 1); // (1~4까지)
                 }
             }
         }, scrollDelay)
-
+ */
         /* --------------------------------------------------------------------------------------
             ***** 순서 3 - fullpageFn 이벤트: 전체 페이지 scroll 또는 keyup 이벤트 발생 *****
         -------------------------------------------------------------------------------------- */
@@ -223,6 +220,7 @@ function Home() {
             let thisEl; // 이동 전 저장할 변수
             let targetEl; // 이동 후 위치의 대상 저장할 변수
             let currentIndex;
+
             for(let i = 0; copy.length > i; i++) { 
                 if(copy[i] === true) {
                     currentIndex = i;
@@ -240,30 +238,30 @@ function Home() {
             if(!isFixed && event.target.closest('.fix')) {  
                 return;
             }
-            // isService가 false이면서 .service 부모 section이 current인 경우 실행X
-            if(!isService && document.querySelector('.section.current .service')) { 
+            // isService가 false이면서 .service 부모 section이 current 경우 실행X
+            /* if(!isService && sectionActiveList[3] === true) { 
                 return;
-            }  
+            } */
             
             // 이전 타깃 검증
             function validationPrevTarget() {
-                if(copy[currentIndex - 1] !== 'undefined') { // 이전 section이 있다면
-                    // targetEl = thisEl.previousSibling;
+                if(copy[currentIndex - 1] !== undefined) { // 이전 section이 있다면
                     currentIndex -= 1; // currentIndex 업데이트
-                    targetEl = sections[currentIndex - 1]; // 이전 타겟 저장
+                    targetEl = sections[currentIndex]; // 이전 타겟 저장
                     tempAccumulate -= thisEl.scrollHeight; // 현재 타겟 높이만큼 - 이동
                     // 최소 tranform 가능한 0보다 작다면 0으로 set
                     if(tempAccumulate < 0) {
                         tempAccumulate = 0;
                     }
+                } else{
+                    return;
                 }
             }
             // 다음 타깃 검증
-            function validationNextTarget() { 
-                if(copy[currentIndex + 1] !== 'undefined') { // 다음 section이 있다면
-                    // targetEl = thisEl.nextSibling; 
+            function validationNextTarget() {
+                if(copy[currentIndex + 1] !== undefined) { // 다음 section이 있다면
                     currentIndex += 1;
-                    targetEl = sections[currentIndex + 1]; // 다음 타겟 저장
+                    targetEl = sections[currentIndex]; // 다음 타겟 저장
                     tempAccumulate += targetEl.scrollHeight; // 다음 타겟 높이만큼 + 이동
                     // 최대 transform 전체높이보다 크다면
                     if(tempAccumulate > (container.scrollHeight - window.innerHeight)) {
@@ -271,6 +269,8 @@ function Home() {
                         const gap = tempAccumulate - (container.scrollHeight - window.innerHeight);
                         tempAccumulate -= gap;
                     }
+                } else{
+                    return;
                 }
 
             }
@@ -281,22 +281,17 @@ function Home() {
             } else if(direction === 'up'){
                 validationPrevTarget();
             }
-            
+
             // 검증 후 결정 값으로 이동
             container.style.transform = `translateY(-${tempAccumulate}px)`;
+            setAccumulate(tempAccumulate);
+
             // .section = .current 전체 삭제, target .current 추가
-            
             for(var i = 0; copy.length > i; i++){
-                // sections[i].classList.remove('current');
                 copy[i] = false;
             }
-
-            setAccumulate(tempAccumulate);
-            setPageActive(currentIndex);
-
-            // targetEl.classList.add('current');
             copy[currentIndex] = true;
-            setSectionActiveList(copy); // class 업데이트
+            setSectionActiveList(copy);
         }, scrollDelay)
        
         
@@ -307,8 +302,10 @@ function Home() {
             if(event.type === 'wheel'){
                 if(event.deltaY > 0) { // scroll Down
                     setDirection('down');
+                    console.log('down');
                 } else if(event.deltaY < 0) { // scroll Up
                     setDirection('up');
+                    console.log('up');
                 }
             }
             // keyup event
@@ -327,7 +324,7 @@ function Home() {
                 activeIndex maxlength이면서 아래로 내려갈때,
                 activeIndex 가 0도, maxlength도 아닐때,
             */
-            if (pageActive === 2) {
+            /* if (pageActive === 2) {
                 const beforeIndex = appIntro.previousIndex;
                 const activeIndex = appIntro.activeIndex;
                 const appIntroSlides = appIntro.slides;
@@ -343,10 +340,10 @@ function Home() {
                     }
                     return;
                 }
-            }
+            } */
 
             fixFn(event); // 대기시간 X = fix event
-            serviceFn(event); // 대기시간 O = service 페이지 event
+            // serviceFn(event); // 대기시간 O = service 페이지 event
             fullpageFn(event); // 대기시간 O = 전체 페이지 event
         }
         
@@ -375,7 +372,7 @@ function Home() {
             window.removeEventListener('keyup', handleScrollandKeyup);
             window.addEventListener('resize', handleRezise);
         }
-    }, [pageActive, mainActive, accumulate, direction])
+    }, [sectionActiveList, mainActive, accumulate, direction])
 
     // main last index check
     const mainSlideChange = (() => {
@@ -585,22 +582,22 @@ function Home() {
                     <div className={`service ${sectionActiveList[3] ? 'on' : ''}`}>
                         <div className="lst_data">
                             <ul>
-                                <li>
+                                <li className={`${serviceActiveList[0] ? 'bg1' : ''}`}>
                                     <p className="lst_tit">Skin</p>
                                     <p className="lst_txt">본연의 건강한 피부를 위한 <span>맞춤 스킨케어</span></p>
                                     <a href="#" className="ico_more"></a>
                                 </li>
-                                <li>
+                                <li className={`${serviceActiveList[1] ? 'bg2' : ''}`}>
                                     <p className="lst_tit">Hair</p>
                                     <p className="lst_txt">최적화된 <span>두피모발 솔루션</span></p>
                                     <a href="#" className="ico_more"></a>
                                 </li>
-                                <li>
+                                <li className={`${serviceActiveList[2] ? 'bg3' : ''}`}>
                                     <p className="lst_tit">Health</p>
                                     <p className="lst_txt">내게 꼭 필요한 <span>영양소만 간편하게</span></p>
                                     <a href="#" className="ico_more"></a>
                                 </li>
-                                <li>
+                                <li className={`${serviceActiveList[3] ? 'bg4' : ''}`}>
                                     <p className="lst_tit">Diet</p>
                                     <p className="lst_txt">건강한 핏라인도 <span>나답게 맞춤으로</span></p>
                                     <a href="#" className="ico_more"></a>
@@ -728,13 +725,7 @@ function Home() {
 
             {/* fix start*/}
             <div className={
-                `fix 
-                    ${
-                        sectionActiveList[2] ? 'second_on' :
-                        sectionActiveList[3] ? 'third_on' :
-                        sectionActiveList[4] ? 'last_on' : ''
-                    }
-                `
+                `fix ${sectionActiveList[2] ? 'second_on' : sectionActiveList[3] ? 'third_on' : sectionActiveList[4] ? 'last_on' : ''}`
             }>
                 {/* splash */}
                 <div className="splash">

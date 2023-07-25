@@ -370,6 +370,7 @@ $bgsamp: '../../images/sample/';
                 display: flex;
                 align-items: center;
                 .swiper-slide{
+                    opacity: 0;
                     width: 440px;
                     height: 520px;
                     padding: 80px 59px;
@@ -379,12 +380,16 @@ $bgsamp: '../../images/sample/';
                     transform: translateX(100px);
                     transition: transform .3s linear .8s, opacity .3s ease;
                     &.swiper-slide-active{
+                        opacity: 1;
                         background-color: $point-color;
                         border-color: $point-color;
                         .lst_tit,
                         .lst_txt{
                             color: #fff;
                         }
+                    }
+                    &.swiper-slide-active ~ .slide{
+                        opacity: 1;
                     }
                     &.slide2 {
                         background-image: url('#{$bg}main_icon_step_02.png');
@@ -398,9 +403,9 @@ $bgsamp: '../../images/sample/';
                     &.slide5 {
                         background-image: url('#{$bg}main_icon_step_05.png');
                     }
-                    &.opacity_on{
+                    /* &.opacity_on{
                         opacity: 0;
-                    }
+                    } */
 
                     .lst_tit{
                         line-height: 40px;
