@@ -20,7 +20,8 @@ import "swiper/css/bundle";
 
 import _ from 'lodash';
 
-function Home() {
+// function Home() {
+const Home = (props) => {
     /* home start -- */
     const [loading, setLoading] = useState(true);
     const [pageActive, setPageActive] = useState(0);
@@ -92,30 +93,13 @@ function Home() {
     }, [])
 
 
-
-    useEffect(() => {        
-        // console.log(pageActive, 'pageActive')
-        // const wrap = document.querySelector('#wrap');
-        // wrap.classList.add('slide_on'); 
-        
-        // const fix = document.querySelector('.fix');
-        // fix.className = 'fix'; // fix class 원위치
-
-        // const on = 'on'; // section active class명, on은 지워지지 않고 그대로 유지
-        // let selectSection = document.querySelectorAll('.section')[pageActive];
-        // selectSection.getElementsByTagName('div')[0].classList.add(on); // 가장 첫번째 div에 on
-        
-        /* ㅇ니ㅏ어널너이ㅏ 꼭 추가하기 */
-        /* if (pageActive === 0) {
-            wrap.classList.remove('slide_on');
-        } */
-    }, [pageActive])
-
-
-
-
     // scroll, keyup 이벤트
     useEffect(() => {
+        document.querySelector('#wrap').classList.add('slide_on');
+        if(sectionActiveList[0]) {
+            document.querySelector('#wrap').classList.remove('slide_on');
+        }
+
         const scrollDelay = 400; // 대기
         const scrollSpeed = 1000; // 속도
         
@@ -239,7 +223,7 @@ function Home() {
                 return;
             }
             // isService가 false이면서 .service 부모 section이 current 경우 실행X
-            /* if(!isService && sectionActiveList[3] === true) { 
+            /* if(!isService && copy[3] === true) { 
                 return;
             } */
             
