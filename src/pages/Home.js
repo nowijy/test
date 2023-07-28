@@ -1,5 +1,5 @@
 // import { Link } from "react-router-dom";
-import { useEffect, useState, useLayoutEffect } from "react";
+import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import '../scss/main/_main.scss';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -26,7 +26,8 @@ const Home = (props) => {
     const [loading, setLoading] = useState(true);
     const [pageActive, setPageActive] = useState(0);
     const [accumulate, setAccumulate] = useState(0);
-    const [direction, setDirection] = useState(null);
+    // const [direction, setDirection] = useState(null);
+    const direction = useRef(null);
 
     /* active class 관련 */
     const [sectionActiveList, setSectionActiveList] = useState(Array.from({length: 8}, () => false));
@@ -95,10 +96,10 @@ const Home = (props) => {
 
     // scroll, keyup 이벤트
     useEffect(() => {
-        document.querySelector('#wrap').classList.add('slide_on');
-        if(sectionActiveList[0]) {
-            document.querySelector('#wrap').classList.remove('slide_on');
-        }
+        // document.querySelector('#wrap').classList.add('slide_on');
+        // if(sectionActiveList[0]) {
+        //     document.querySelector('#wrap').classList.remove('slide_on');
+        // }
 
         const scrollDelay = 400; // 대기
         const scrollSpeed = 1000; // 속도
@@ -107,14 +108,14 @@ const Home = (props) => {
         const fixSplashFn = (() => {
             const fixSplash = document.querySelector('.fix .splash');        
             // fixSplash show
-            if((sectionActiveList[1] && direction === 'down') || (sectionActiveList[4] && direction === 'up')) {
+            if((sectionActiveList[1] && direction.current === 'down') || (sectionActiveList[3] && direction.current === 'up')) {
                 fixSplash.style.display = 'block';
                 setTimeout(() => {
                     fixSplash.style.opacity = 1;    
                 }, 300);
             }
             // fixSplash hide
-            if((sectionActiveList[1] && direction === 'up') || (sectionActiveList[4] && direction === 'down')) {
+            if((sectionActiveList[0] && direction.current === 'up') || (sectionActiveList[4] && direction.current === 'down')) {
                 fixSplash.style.opacity = '';
                 setTimeout(() => {
                     fixSplash.style.display = '';
@@ -140,12 +141,12 @@ const Home = (props) => {
                 let offsetTop = fixImgarea.scrollTop;
                 let offsetBottom = fixImgarea.scrollHeight - fixImgarea.scrollTop;
 
-                if(offsetTop === 0 && direction === 'up'){
+                if(offsetTop === 0 && direction.current === 'up'){
                     if(!isFixed) { // fixIs true 아니면
                         return isFixed = true; // fixIs true로 변경, return 다음 이벤트 실행 X
                     }
                 }
-                if(offsetBottom - fixImgarea.clientHeight <= 10 && direction === 'down') {
+                if(offsetBottom - fixImgarea.clientHeight <= 10 && direction.current === 'down') {
                     if(!isFixed) { // fixIs true 아니면
                         return isFixed = true; // fixIs true로 변경, return 다음 이벤트 실행 X
                     }
@@ -166,13 +167,13 @@ const Home = (props) => {
                 // serviceNum = serviceList.indexOf(document.querySelector('.section .service .lst_data li.on'));
                 // lst_data li 중에 on이 있는지 확인, 없으면 -1 반환 
                 
-                if(direction === 'down') {
+                if(direction.current === 'down') {
                     if(serviceNum < (copy.length - 1)) { // 3보다 작은 경우에만
                         serviceNum += 1;
                     } else if(serviceNum === (copy.length - 1)) { // 3과 같은 경우
                         return isService = true; // 다음 섹션으로 이동 허가
                     }
-                } else if(direction === 'up') { // -1보다 큰 경우에만
+                } else if(direction.current === 'up') { // -1보다 큰 경우에만
                     if(serviceNum > -1) { // -1보다 큰경우
                         serviceNum -= 1;
                     } else if(serviceNum === -1) { // -1과 같은 경우
@@ -223,9 +224,9 @@ const Home = (props) => {
                 return;
             }
             // isService가 false이면서 .service 부모 section이 current 경우 실행X
-            /* if(!isService && copy[3] === true) { 
+            if(!isService && copy[3] === true) { 
                 return;
-            } */
+            }
             
             // 이전 타깃 검증
             function validationPrevTarget() {
@@ -260,9 +261,9 @@ const Home = (props) => {
             }
 
            
-            if(direction === 'down') {
+            if(direction.current === 'down') {
                 validationNextTarget();
-            } else if(direction === 'up'){
+            } else if(direction.current === 'up'){
                 validationPrevTarget();
             }
 
@@ -285,20 +286,22 @@ const Home = (props) => {
             // 이벤트 방향 저장
             if(event.type === 'wheel'){
                 if(event.deltaY > 0) { // scroll Down
-                    setDirection('down');
-                    console.log('down');
+                    // setDirection('down');
+                    direction.current = 'down';
                 } else if(event.deltaY < 0) { // scroll Up
-                    setDirection('up');
-                    console.log('up');
+                    // setDirection('up');
+                    direction.current = 'up';
                 }
             }
             // keyup event
             if(event.type === 'keyup'){
                 if (event.isComposing || event.keyCode === 40) {
-                    setDirection('down');
+                    // setDirection('down');
+                    direction.current = 'down';
                 }
                 if (event.isComposing || event.keyCode === 38) {
-                    setDirection('up');
+                    // setDirection('up');
+                    direction.current = 'up';
                 }
             }
             /* 
@@ -319,7 +322,7 @@ const Home = (props) => {
                     isAppIntro = true;
                 }
                 if(!isAppIntro) {
-                    if ((activeIndex === 0 && direction === 'up') || (activeIndex === appIntroTotal && direction === 'down')) {
+                    if ((activeIndex === 0 && direction.current === 'up') || (activeIndex === appIntroTotal && direction.current === 'down')) {
                         return isAppIntro = true;
                     }
                     return;
@@ -343,20 +346,20 @@ const Home = (props) => {
             container.style.transform = `translateY(-${tempAccumulate}px)`;
             setAccumulate(tempAccumulate);
         };
-        window.addEventListener('resize', handleRezise);
-    
+        
         // main last 아닐경우 event 기능X
         if(mainActive === mainTotal) {
             window.addEventListener('wheel', handleScrollandKeyup, { passive : true });
             window.addEventListener('keyup', handleScrollandKeyup);
         }
+        window.addEventListener('resize', handleRezise);
         
         return() => {
             window.removeEventListener('wheel', handleScrollandKeyup);
             window.removeEventListener('keyup', handleScrollandKeyup);
-            window.addEventListener('resize', handleRezise);
+            window.removeEventListener('resize', handleRezise);
         }
-    }, [sectionActiveList, mainActive, accumulate, direction])
+    }, [mainActive, sectionActiveList, direction, accumulate])
 
     // main last index check
     const mainSlideChange = (() => {
