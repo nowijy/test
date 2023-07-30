@@ -60,6 +60,8 @@ const Home = (props) => {
     /* swiper 관련 */
     const [main, setMain] = useState([]);
     const [appIntro, setAppIntro] = useState([]);
+    const [magagine, setMagazine] = useState([]);
+
     const [mainTotal, setMainTotal] = useState(0);
     const [mainActive, setMainActive] = useState(0);
     const [mainToggle, setMainToggle] = useState(false);
@@ -135,6 +137,7 @@ const Home = (props) => {
         // **** fixed 이벤트: pageActive 바뀔때마다 발생 **** //
         const fixSplashFn = (() => {
             const fixSplash = document.querySelector('.fix .splash');        
+            console.log(innerSectionActiveList)
             // fixSplash show
             if((innerSectionActiveList[1] && directionRef.current === 'down') || (innerSectionActiveList[3] && directionRef.current === 'up')) {
                 fixSplash.style.display = 'block';
@@ -186,7 +189,7 @@ const Home = (props) => {
             ***** 순서 2 - serviceFn 이벤트: service 안에서 scroll 또는 keyup 이벤트 발생 *****
         -------------------------------------------------------------------------------------- */
         let isService = null; // service scroll 이벤트 체크
-        const innerServiceActiveList = serviceActiveList; 
+        const innerServiceActiveList = [...serviceActiveList]; 
         // isService true 상태로 fullpageFn 통과 후, 이벤트 다시 타면서 isService는 다시 null임 
         const serviceFn = _.debounce((event) => {
             if (!isService && innerSectionActiveList[3]) {
@@ -226,7 +229,6 @@ const Home = (props) => {
                     copy[currentIndex] = true;
                 }
                 setServiceActiveList(copy);
-                console.log("왜 시간이 들지")
             }
         }, scrollDelay)
 
@@ -318,6 +320,7 @@ const Home = (props) => {
        
         
         let isAppIntro = null;
+        let isMagagine = null;
         /* mainActive === mainTotal 라는 전제하에 실행 */
         function handleScrollandKeyup(event) {
             // 이벤트 방향 저장
@@ -365,6 +368,22 @@ const Home = (props) => {
                     return;
                 }
             } 
+            if (innerSectionActiveList[4]) { 
+                const beforeIndex = magagine.previousIndex;
+                const activeIndex = magagine.activeIndex;
+                const magagineSlides = magagine.slides;
+                const magagineTotal = magagineSlides.length - 2;
+                // swiper 이동한적이 없으면 전체 슬라이드 이벤트 바로 적용
+                if(beforeIndex === 'undefined') {
+                    isMagagine = true;
+                }
+                if(!isMagagine) {
+                    if ((activeIndex === 0 && directionRef.current === 'up') || (activeIndex === magagineTotal && directionRef.current === 'down')) {
+                        return isMagagine = true;
+                    }
+                    return;
+                }
+            }
 
             fixFn(event); // 대기시간 X = fix event
             serviceFn(event); // 대기시간 O = service 페이지 event
@@ -645,10 +664,27 @@ const Home = (props) => {
                 <section className={`section ${sectionActiveList[4] ? 'current' : ''}`}>
                     <div className={`magazine ${sectionActiveList[4] ? 'on' : ''}`}>
                         {/* swiper start -- */}
-                        안뇨쇼
-                        {/* <div className="swiper">
-                            <div className="swiper-wrapper">
-                                <div className="swiper-slide slide1">
+                        <div className="swiper swiper-container">
+                            <Swiper
+                                className=""
+                                spaceBetween={0}
+                                slidesPerView='auto'
+                                slidesPerGroup={2}
+                                slidesOffsetBefore={0}
+                                slidesOffsetAfter={610}
+                                speed={600}
+                                loop={false}
+                                mousewheel={true}
+                                autoplay={false}
+                                modules={[Mousewheel]}
+                                onSwiper={(swiper) => {
+                                    setMagazine(swiper);
+                                }}
+                                onSlideChangeTransitionStart={(swiper) => {
+                                    setMagazine(swiper);
+                                }}
+                            >   
+                                <SwiperSlide className="slide slide1">
                                     <p className="sec_tit">최신 트렌드부터
                                         <span>라이프스타일 팁까지</span></p>
                                     <p className="sec_txt">ID.IM Magazine을 통해 스킨케어부터 헬스, 다이어트까지
@@ -657,9 +693,8 @@ const Home = (props) => {
                                     <div>
                                         <p className="sec_link">매거진 바로가기 <a href="#" className="ico_more"></a></p>
                                     </div>
-                                </div>
-
-                                <div className="swiper-slide slide2">
+                                </SwiperSlide>
+                                <SwiperSlide className="slide slide2">
                                     <div className="img_area"><span><img src="" alt=""/></span></div>
                                     <dl className="lst_info">
                                         <dt>Hip Place</dt>
@@ -667,9 +702,8 @@ const Home = (props) => {
                                             <span>소개해 드려요.</span>    
                                         </dd>
                                     </dl>
-                                </div>
-
-                                <div className="swiper-slide slide3">
+                                </SwiperSlide>
+                                <SwiperSlide className="slide slide3">
                                     <div className="img_area"><span><img src="" alt=""/></span></div>
                                     <dl className="lst_info">
                                         <dt>Issue Item</dt>
@@ -677,34 +711,31 @@ const Home = (props) => {
                                             <span>나에게 맞을지 알려드려요.</span>
                                         </dd>
                                     </dl>
-                                </div>
-
-                                <div className="swiper-slide slide4">
+                                </SwiperSlide>
+                                <SwiperSlide className="slide slide4">
                                     <div className="img_area"><span><img src="" alt=""/></span></div>
                                     <dl className="lst_info">
                                         <dt>Trend Now</dt>
                                         <dd>지금 가장 유행하는 트렌드를 모아봐요.</dd>
                                     </dl>
-                                </div>
-                                
-                                <div className="swiper-slide slide5">
+                                </SwiperSlide>
+                                <SwiperSlide className="slide slide5">
                                     <div className="img_area"><span><img src="" alt=""/></span></div>
                                     <dl className="lst_info">
                                         <dt>Digging DNA</dt>
                                         <dd>DNA에 관한 궁금증을 해결해 드려요.</dd>
                                     </dl>
-                                </div>
-
-                                <div className="swiper-slide slide6">
+                                </SwiperSlide>
+                                <SwiperSlide className="slide slide6">
                                     <div className="slide_inner">
                                         <p className="sec_tit logo"><span>ID.IM</span> Magazine</p>
                                         <div>
                                             <p className="sec_link">매거진 바로가기 <a href="#" className="ico_more"></a></p>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div> */}
+                                </SwiperSlide>
+                            </Swiper>
+                        </div>
                         {/* -- swiper end */}
                     </div>
                 </section>
