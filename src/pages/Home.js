@@ -10,6 +10,10 @@ import previewUse2 from "../images/sample/main_use_preview_02.jpg";
 import previewUse3 from "../images/sample/main_use_preview_03.jpg";
 import previewUse4 from "../images/sample/main_use_preview_04.jpg";
 import previewUse5 from "../images/sample/main_use_preview_05.jpg";
+import magazineImg1 from "../images/sample/main_magazine_01.jpg";
+import magazineImg2 from "../images/sample/main_magazine_02.jpg";
+import magazineImg3 from "../images/sample/main_magazine_03.jpg";
+import magazineImg4 from "../images/sample/main_magazine_04.jpg";
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -17,7 +21,6 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay, Mousewheel } from "swiper";
 // Import Swiper styles
 import "swiper/css/bundle";
-
 import _ from 'lodash';
 
 // function Home() {
@@ -30,10 +33,40 @@ const Home = (props) => {
     const directionRef = useRef(null);
 
     /* active class 관련 */
+    const [headerActive, setHeaderActive] = useState('');
     const [sectionActiveList, setSectionActiveList] = useState(Array.from({ length: 8 }, () => false));
     const [serviceActiveList, setServiceActiveList] = useState(Array.from({length: 4}, () => false));
 
-    /* msg 관련 */
+    /* text 관련 */
+    // [2] ID.IM앱 사용하기
+    const appIntroMsg = [
+        {
+            id: 'step1',
+            lst_tit: '앱 다운로드',
+            lst_txt: ['구글 플레이, 애플 스토어에서', 'ID.IM을 검색 후 설치해 주세요.'],
+        },
+        {
+            id: 'step2',
+            lst_tit: '회원가입 & 구독',
+            lst_txt: ['회원가입 후 나에게 필요한', 'ID.IM 제품을 구독합니다.'],    
+        },
+        {
+            id: 'step3',
+            lst_tit: 'DNA 검사 & 문진',
+            lst_txt: ['타고난 나를 확인하기 위한', 'DNA검사와 현재의 나를 분석하기', '위한 문진을 진행해 주세요.'],    
+        },
+        {
+            id: 'step4',
+            lst_tit: '종합 솔루션 확인',
+            lst_txt: ['DNA와 현재 상태를 종합적으로 분석해', '나에게 필요한 솔루션을 전달해 드려요.'],    
+        },
+        {
+            id: 'step5',
+            lst_tit: '맞춤 제품 사용',
+            lst_txt: ['나만을 위해 준비된 한 달 사용분의', 'ID.IM 맞춤 제품을 꾸준히 사용합니다.'],    
+        },
+    ]
+    // [3] 서비스
     const serviceMsg = [
         {
             lst_tit: 'skin',
@@ -56,88 +89,107 @@ const Home = (props) => {
             ico_more: '',
         },
     ]
+    // [4] 매거진
+    const magazineMsg = [
+        {
+            id: 'place',
+            lst_info_dt: 'Hip Place',
+            lst_info_dd: ['나에게 맞는 힙플레이스를', '소개해 드려요.'],
+            img_area: magazineImg1,
+        },
+        {
+            id: 'issue',
+            lst_info_dt: 'Issue Item',
+            lst_info_dd: ['유행하는 이슈 아이템,', '나에게 맞을지 알려드려요.'],
+            img_area: magazineImg2,
+        },
+        {
+            id: 'trend',
+            lst_info_dt: 'Trend Now',
+            lst_info_dd: ['지금 가장 유행하는 트렌드를 모아봐요.'],
+            img_area: magazineImg3,
+        },
+        {
+            id: 'dna',
+            lst_info_dt: 'Digging DNA',
+            lst_info_dd: ['DNA에 관한 궁금증을 해결해 드려요.'],
+            img_area: magazineImg4,
+        },
+    ]
 
     /* swiper 관련 */
     const [main, setMain] = useState([]);
     const [appIntro, setAppIntro] = useState([]);
-    const [magagine, setMagazine] = useState([]);
+    const [magazine, setMagazine] = useState([]);
 
     const [mainTotal, setMainTotal] = useState(0);
     const [mainActive, setMainActive] = useState(0);
     const [mainToggle, setMainToggle] = useState(false);
 
-    useEffect(() => {
-        // 0번째 section 활성화
-        let copy = [...sectionActiveList];
-        copy[0] = true;
-        setSectionActiveList(copy);
-    }, [])
-    
-    // 새로고침
-    useEffect(() => {
-        console.log("실행 테스트");
+     // 새로고침
+     useEffect(() => {
         window.onbeforeunload = function() { // 페이지를 벗어나면서
             window.scrollTo(0, 0);
         };
-        if(window.scrollY !== 0) { // window scrollY가 0이 아닌 경우
-            window.scrollTo(0, 0);
-        }
         document.body.style.overflow = 'hidden'; 
 
         setLoading(false); // 로딩 완료
-        /* setTimeout(() => {
-        }, 300) */
         return () => {
             window.onbeforeunload = null; // 이벤트 반환
         };
     })
 
-    // btn_top click 이벤트
-    useEffect(() => {
-        const btnTop = document.querySelector('.fix .btn_top');
-        // btn_top click event
-        function btnTopMove() {
-            // 모두 0으로 reset
-            const container = document.querySelector('#container');
-            container.style.transform = `translateY(-${0}px)`;
-            setAccumulate(0);
-            setPageActive(0);
+    // reset event
+    function btnTopMove() {
+        // 이동거리 초기화
+        const container = document.querySelector('#container');
+        container.style.transform = `translateY(-${0}px)`;
+        setAccumulate(0);
 
-            // .section current class 삭제 
-            // 0번째 section 활성화
-            let copy = [...sectionActiveList];
-            for(var i = 0; copy.length > i; i++){
-                if (copy[i]) {
-                    copy[i] = false;
-                }
+        // section class 전체 삭제
+        let copy = [...sectionActiveList];
+        for(var i = 0; copy.length > i; i++){
+            if (copy[i]) {
+                copy[i] = false;
             }
-            // .section[0] current class 추가
-            copy[0] = true;
-            setSectionActiveList(copy);
-
         }
+        // 0번째 section class 추가
+        copy[0] = true;
+        setSectionActiveList(copy);
+    }
+
+    useEffect(() => {
+        btnTopMove(); // 초기 1번 실행
+
+        // btn_top click event
+        const btnTop = document.querySelector('.fix .btn_top');
         btnTop.addEventListener('click', btnTopMove);
         return() => {
             btnTop.removeEventListener('click', btnTopMove);
         }
     }, [])
-
-
+    
     // scroll, keyup 이벤트
     useEffect(() => {
-        // document.querySelector('#wrap').classList.add('slide_on');
-        // if(sectionActiveList[0]) {
-        //     document.querySelector('#wrap').classList.remove('slide_on');
-        // }
+        // header class 전달
+        setHeaderActive( sectionActiveList[0] ? '' : 'slide_on' );
 
         const scrollDelay = 400; // 대기
         const scrollSpeed = 1000; // 속도
         const innerSectionActiveList = [...sectionActiveList];
 
-        // **** fixed 이벤트: pageActive 바뀔때마다 발생 **** //
+        // **** fixSplashFn 이벤트 **** //
         const fixSplashFn = (() => {
-            const fixSplash = document.querySelector('.fix .splash');        
-            console.log(innerSectionActiveList)
+            const fixSplash = document.querySelector('.fix .splash');
+            // active class save
+            let copy = [...innerSectionActiveList];
+            let currentIndex;
+            for(let i = 0; copy.length > i; i++) { 
+                if(copy[i]) {
+                    currentIndex = i;
+                    break;
+                }
+            }
             // fixSplash show
             if((innerSectionActiveList[1] && directionRef.current === 'down') || (innerSectionActiveList[3] && directionRef.current === 'up')) {
                 fixSplash.style.display = 'block';
@@ -152,13 +204,20 @@ const Home = (props) => {
                     fixSplash.style.display = '';
                 }, 300);
             }
+            // 예외
+            if(!(currentIndex === 1 || currentIndex === 2 || currentIndex === 3)) {
+                fixSplash.style.opacity = '';
+                setTimeout(() => {
+                    fixSplash.style.display = '';
+                }, 300);
+            }
         })
         fixSplashFn();
 
         /* --------------------------------------------------------------------------------------
             ***** 순서 1 - fixFn 이벤트: splash 안에서 scroll 또는 keyup 이벤트 발생 *****
         -------------------------------------------------------------------------------------- */
-        // fullpageFn 이벤트 시간과 맞지 않아서 FixFn 분리
+        // fullpageFn 이벤트 시간과 맞지 않아서 FixFn 분리하였음
         let isFixed = null; // fixed scroll 이벤트 체크
         const fixFn = ((event) => {
             // isFixed false이면서 이벤트 타겟이 fix 인경우
@@ -193,9 +252,9 @@ const Home = (props) => {
         // isService true 상태로 fullpageFn 통과 후, 이벤트 다시 타면서 isService는 다시 null임 
         const serviceFn = _.debounce((event) => {
             if (!isService && innerSectionActiveList[3]) {
+                // lst_data li 중에 on이 있는지 확인, 없으면 -1 반환 
                 let copy = [...innerServiceActiveList];
                 let currentIndex;
-                // lst_data li 중에 on이 있는지 확인, 없으면 -1 반환 
                 for(let i = 0; copy.length > i; i++) { 
                     if(copy[i]) {
                         currentIndex = i;
@@ -225,7 +284,7 @@ const Home = (props) => {
                         copy[i] = false;
                     }
                 }
-                if (currentIndex !== -1) {
+                if (currentIndex !== -1) { // -1이 아닌 경우에만
                     copy[currentIndex] = true;
                 }
                 setServiceActiveList(copy);
@@ -238,10 +297,9 @@ const Home = (props) => {
         const fullpageFn = _.debounce((event) => {
             const sections = Array.from(document.querySelectorAll('.section'));
             let copy = [...innerSectionActiveList];
-            let thisEl; // 이동 전 저장할 변수
-            let targetEl; // 이동 후 위치의 대상 저장할 변수
+            let thisEl; // 이동 전 section 저장할 변수
+            let targetEl; // 이동 후 section 저장할 변수
             let currentIndex;
-
             for(let i = 0; copy.length > i; i++) { 
                 if(copy[i]) {
                     currentIndex = i;
@@ -263,7 +321,6 @@ const Home = (props) => {
             if (!isService && innerSectionActiveList[3]) { 
                 return;
             }
-            ////////////////// current index 적용전 //////////////////
             
             // 이전 타깃 검증
             function validationPrevTarget() {
@@ -275,7 +332,7 @@ const Home = (props) => {
                     if(tempAccumulate < 0) {
                         tempAccumulate = 0;
                     }
-                } else{
+                } else{ // 이전 section 없으면 실행X
                     return;
                 }
             }
@@ -291,10 +348,9 @@ const Home = (props) => {
                         const gap = tempAccumulate - (container.scrollHeight - window.innerHeight);
                         tempAccumulate -= gap;
                     }
-                } else{
+                } else{ // 다음 section 없으면 실행X
                     return;
                 }
-
             }
 
            
@@ -308,82 +364,78 @@ const Home = (props) => {
             container.style.transform = `translateY(-${tempAccumulate}px)`;
             setAccumulate(tempAccumulate);
 
-            // .section = .current 전체 삭제, target .current 추가
+            // section class 전체 삭제
             for(var i = 0; copy.length > i; i++){
                 if (copy[i]) {
                     copy[i] = false;
                 }
             }
+            // n번째 section class 추가
             copy[currentIndex] = true;
             setSectionActiveList(copy);
         }, scrollDelay)
        
         
         let isAppIntro = null;
-        let isMagagine = null;
+        let isMagazine = null;
+        let temp = null;
         /* mainActive === mainTotal 라는 전제하에 실행 */
         function handleScrollandKeyup(event) {
             // 이벤트 방향 저장
             if(event.type === 'wheel'){
                 if(event.deltaY > 0) { // scroll Down
-                    // setDirection('down');
                     directionRef.current = 'down';
                 } else if(event.deltaY < 0) { // scroll Up
-                    // setDirection('up');
                     directionRef.current = 'up';
                 }
             }
             // keyup event
             if(event.type === 'keyup'){
                 if (event.isComposing || event.keyCode === 40) {
-                    // setDirection('down');
                     directionRef.current = 'down';
                 }
                 if (event.isComposing || event.keyCode === 38) {
-                    // setDirection('up');
                     directionRef.current = 'up';
                 }
             }
-            /* 
-                pageActive 2라는 전제하에
-                beforeIndex가 없을때,
-                activeIndex 0이면서 위로 올라갈때,
-                activeIndex maxlength이면서 아래로 내려갈때,
-                activeIndex 가 0도, maxlength도 아닐때,
-            */
+           
+            /* 여기 수자ㅓㅇ하다말았음 */
             if (innerSectionActiveList[2]) {
                 const beforeIndex = appIntro.previousIndex;
                 const activeIndex = appIntro.activeIndex;
-                const appIntroSlides = appIntro.slides;
-                const appIntroTotal = appIntroSlides.length - 1;
+                const slides = appIntro.slides;
+                const slideTotal = appIntroSlides.length - 1;
                 
+                const condition1 = (beforeIndex === undefined);
+                const condition2 = ((temp === null || temp === 0) && activeIndex === 0 && directionRef.current === 'up');
+                const condition3 = ((temp === null || temp === appIntroTotal) && activeIndex === appIntroTotal && directionRef.current === 'down');
+                console.log(condition1, condition2, condition3)
                 // swiper 이동한적이 없으면 전체 슬라이드 이벤트 바로 적용
-                if(beforeIndex === 'undefined') {
+                if(condition1 || condition2 || condition3) {
                     isAppIntro = true;
                 }
+                temp = activeIndex;
                 if(!isAppIntro) {
-                    if ((activeIndex === 0 && directionRef.current === 'up') || (activeIndex === appIntroTotal && directionRef.current === 'down')) {
-                        return isAppIntro = true;
-                    }
                     return;
                 }
             } 
-            if (innerSectionActiveList[4]) { 
-                const beforeIndex = magagine.previousIndex;
-                const activeIndex = magagine.activeIndex;
-                const magagineSlides = magagine.slides;
-                const magagineTotal = magagineSlides.length - 2;
+            /* if (innerSectionActiveList[4]) { 
+                const beforeIndex = magazine.previousIndex;
+                const activeIndex = magazine.activeIndex;
+                const magazineSlides = magazine.slides;
+                const magazineTotal = magazineSlides.length - 2;
+                console.log(magazine, 'isMagazine', isMagazine, 'directionRef.current', directionRef.current, 'beforeIndex', beforeIndex, 'activeIndex', activeIndex, 'magazineTotal', magazineTotal)
                 // swiper 이동한적이 없으면 전체 슬라이드 이벤트 바로 적용
-                if(beforeIndex === 'undefined') {
-                    isMagagine = true;
+                if(beforeIndex === undefined) {
+                    isMagazine = true;
                 }
-                if(!isMagagine) {
-                    if ((activeIndex === 0 && directionRef.current === 'up') || (activeIndex === magagineTotal && directionRef.current === 'down')) {
-                        return isMagagine = true;
+                if(!isMagazine) {
+                    if ((activeIndex === 0 && directionRef.current === 'up') || (activeIndex === magazineTotal && directionRef.current === 'down')) {
+                        return isMagazine = true;
                     }
                     return;
                 }
-            }
+            } */
 
             fixFn(event); // 대기시간 X = fix event
             serviceFn(event); // 대기시간 O = service 페이지 event
@@ -477,7 +529,7 @@ const Home = (props) => {
                 ) : null
             }
 
-            <Header />
+            <Header headerActive={headerActive} />
             {/* container start -- */}
             <div id="container" className="main">
                 {/* [0] 첫화면 */}
@@ -582,38 +634,16 @@ const Home = (props) => {
                                     swiper.slides[swiper.previousIndex].classList.add('opacity_on');
                                 }}
                             >
-                                <SwiperSlide className="slide slide1">
-                                    <p className="lst_tit">Step. 01 <span>앱 다운로드</span></p>
-                                    <p className="lst_txt">
-                                        구글 플레이, 애플 스토어에서 
-                                        <span>ID.IM을 검색 후 설치해 주세요.</span>
-                                    </p>
-                                </SwiperSlide>
-                                <SwiperSlide className="slide slide2">
-                                    <p className="lst_tit">Step. 02 <span>회원가입 & 구독</span></p>
-                                    <p className="lst_txt">회원가입 후 나에게 필요한
-                                        <span>ID.IM 제품을 구독합니다.</span>
-                                    </p>
-                                </SwiperSlide>
-                                <SwiperSlide className="slide slide3">
-                                    <p className="lst_tit">Step. 03 <span>DNA 검사 & 문진</span></p>
-                                    <p className="lst_txt">타고난 나를 확인하기 위한
-                                        <span>DNA검사와 현재의 나를 분석하기</span>
-                                        <span>위한 문진을 진행해 주세요.</span>
-                                    </p>
-                                </SwiperSlide>
-                                <SwiperSlide className="slide slide4">
-                                    <p className="lst_tit">Step. 04 <span>종합 솔루션 확인</span></p>
-                                    <p className="lst_txt">DNA와 현재 상태를 종합적으로 분석해
-                                        <span>나에게 필요한 솔루션을 전달해 드려요.</span>
-                                    </p>
-                                </SwiperSlide>
-                                <SwiperSlide className="slide slide5">
-                                    <p className="lst_tit">Step. 05 <span>맞춤 제품 사용</span></p>
-                                    <p className="lst_txt">나만을 위해 준비된 한 달 사용분의 
-                                        <span>ID.IM 맞춤 제품을 꾸준히 사용합니다.</span>
-                                    </p>
-                                </SwiperSlide>
+                                {appIntroMsg.map((item, idx) => (
+                                    <SwiperSlide key={item.id} className={`slide slide${idx+1}`}>
+                                        <p className="lst_tit">Step. {(idx+1) < 10 ? ('0' + (idx+1)) : (idx+1)} <span>{item.lst_tit}</span></p>
+                                        <p className="lst_txt">
+                                            {item.lst_txt[0]}
+                                            {item.lst_txt[1] ? (<span>{item.lst_txt[1]}</span>) : ''}
+                                            {item.lst_txt[2] ? (<span>{item.lst_txt[2]}</span>) : ''}
+                                        </p>
+                                    </SwiperSlide>    
+                                ))}
                             </Swiper>
                         </div>
                         {/* -- swiper end */}
@@ -625,36 +655,16 @@ const Home = (props) => {
                     <div className={`service ${sectionActiveList[3] ? 'on' : ''}`}>
                         <div className="lst_data">
                             <ul className={`${serviceActiveList[0] ? 'bg1' : serviceActiveList[1] ? 'bg2' : serviceActiveList[2] ? 'bg3' : serviceActiveList[3] ? 'bg4' : ''}`}>
-                                {serviceActiveList.map((isActive, idx) => (
-                                    <li key={serviceMsg[idx].lst_tit} className={`${isActive ? 'on' : ''}`}>
-                                        <p className="lst_tit">{(serviceMsg[idx].lst_tit).replace(/^[a-z]/, char => char.toUpperCase())}</p>
+                                {serviceMsg.map((item, idx) => (
+                                    <li key={item.lst_tit} className={`${serviceActiveList[idx] ? 'on' : ''}`}>
+                                        <p className="lst_tit">{(item.lst_tit).replace(/^[a-z]/, char => char.toUpperCase())}</p>
                                         <p className="lst_txt">
-                                            {serviceMsg[idx].lst_txt[0]}
-                                            <span>{serviceMsg[idx].lst_txt[1]}</span>
+                                            {item.lst_txt[0]}
+                                            {item.lst_txt[1] ? (<span>{item.lst_txt[1]}</span>) : ''}
                                         </p>
                                         <a href="#" className="ico_more"></a>
                                     </li>
                                 ))}
-                                {/* <li>
-                                    <p className="lst_tit">Skin</p>
-                                    <p className="lst_txt">본연의 건강한 피부를 위한 <span>맞춤 스킨케어</span></p>
-                                    <a href="#" className="ico_more"></a>
-                                </li>
-                                <li>
-                                    <p className="lst_tit">Hair</p>
-                                    <p className="lst_txt">최적화된 <span>두피모발 솔루션</span></p>
-                                    <a href="#" className="ico_more"></a>
-                                </li>
-                                <li>
-                                    <p className="lst_tit">Health</p>
-                                    <p className="lst_txt">내게 꼭 필요한 <span>영양소만 간편하게</span></p>
-                                    <a href="#" className="ico_more"></a>
-                                </li>
-                                <li>
-                                    <p className="lst_tit">Diet</p>
-                                    <p className="lst_txt">건강한 핏라인도 <span>나답게 맞춤으로</span></p>
-                                    <a href="#" className="ico_more"></a>
-                                </li> */}
                             </ul>
                         </div>
                     </div>
@@ -683,7 +693,7 @@ const Home = (props) => {
                                 onSlideChangeTransitionStart={(swiper) => {
                                     setMagazine(swiper);
                                 }}
-                            >   
+                            >
                                 <SwiperSlide className="slide slide1">
                                     <p className="sec_tit">최신 트렌드부터
                                         <span>라이프스타일 팁까지</span></p>
@@ -694,46 +704,26 @@ const Home = (props) => {
                                         <p className="sec_link">매거진 바로가기 <a href="#" className="ico_more"></a></p>
                                     </div>
                                 </SwiperSlide>
-                                <SwiperSlide className="slide slide2">
-                                    <div className="img_area"><span><img src="" alt=""/></span></div>
-                                    <dl className="lst_info">
-                                        <dt>Hip Place</dt>
-                                        <dd>나에게 맞는 힙플레이스를
-                                            <span>소개해 드려요.</span>    
-                                        </dd>
-                                    </dl>
-                                </SwiperSlide>
-                                <SwiperSlide className="slide slide3">
-                                    <div className="img_area"><span><img src="" alt=""/></span></div>
-                                    <dl className="lst_info">
-                                        <dt>Issue Item</dt>
-                                        <dd>유행하는 이슈 아이템,
-                                            <span>나에게 맞을지 알려드려요.</span>
-                                        </dd>
-                                    </dl>
-                                </SwiperSlide>
-                                <SwiperSlide className="slide slide4">
-                                    <div className="img_area"><span><img src="" alt=""/></span></div>
-                                    <dl className="lst_info">
-                                        <dt>Trend Now</dt>
-                                        <dd>지금 가장 유행하는 트렌드를 모아봐요.</dd>
-                                    </dl>
-                                </SwiperSlide>
-                                <SwiperSlide className="slide slide5">
-                                    <div className="img_area"><span><img src="" alt=""/></span></div>
-                                    <dl className="lst_info">
-                                        <dt>Digging DNA</dt>
-                                        <dd>DNA에 관한 궁금증을 해결해 드려요.</dd>
-                                    </dl>
-                                </SwiperSlide>
-                                <SwiperSlide className="slide slide6">
+                                {magazineMsg.map((item, idx) => (
+                                    <SwiperSlide key={item.id} className={`slide slide${idx + 2}`}>
+                                        <div className="img_area"><span><img src={item.img_area} alt=""/></span></div>
+                                        <dl className="lst_info">
+                                            <dt>{item.lst_info_dt}</dt>
+                                            <dd>
+                                                {item.lst_info_dd[0]}
+                                                {item.lst_info_dd[1] ? (<span>{item.lst_info_dd[1]}</span>) : '' }
+                                            </dd>
+                                        </dl>
+                                    </SwiperSlide>
+                                ))}
+                                <SwiperSlide className={`slide slide${magazineMsg.length+2}`}>
                                     <div className="slide_inner">
                                         <p className="sec_tit logo"><span>ID.IM</span> Magazine</p>
                                         <div>
                                             <p className="sec_link">매거진 바로가기 <a href="#" className="ico_more"></a></p>
                                         </div>
                                     </div>
-                                </SwiperSlide>
+                                </SwiperSlide> 
                             </Swiper>
                         </div>
                         {/* -- swiper end */}

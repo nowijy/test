@@ -1,8 +1,10 @@
 import "../scss/common/_header.scss";
+import "../scss/common/_fix.scss";
 
-function Header() {
+const Header = (props) => {
+    const headerActive = props.headerActive;
     return (
-        <header className="header">
+        <header className={`header ${headerActive}`}>
             <h1 className="logo"><a href="#">ID.IM</a></h1>
             <nav className="gnb_nav">
                 <ul>
