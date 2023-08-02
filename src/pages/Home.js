@@ -27,17 +27,8 @@ import _ from 'lodash';
 const Home = (props) => {
     /* home start -- */
     const [loading, setLoading] = useState(true);
-    const [pageActive, setPageActive] = useState(0);
-    const [accumulate, setAccumulate] = useState(0);
-    // const [direction, setDirection] = useState(null);
-    const directionRef = useRef(null);
-
-    /* active class 관련 */
-    const [headerActive, setHeaderActive] = useState('');
-    const [sectionActiveList, setSectionActiveList] = useState(Array.from({ length: 8 }, () => false));
-    const [serviceActiveList, setServiceActiveList] = useState(Array.from({length: 4}, () => false));
-
-    /* text 관련 */
+   
+    /* html 관리 */
     // [2] ID.IM앱 사용하기
     const appIntroMsg = [
         {
@@ -116,23 +107,32 @@ const Home = (props) => {
             img_area: magazineImg4,
         },
     ]
+    
+    /* Ref 관리 */
+    const directionRef = useRef(null);
 
-    /* swiper 관련 */
+    /* State 관리 */
+    const [accumulate, setAccumulate] = useState(0);
+    /* active class */
+    const [headerActive, setHeaderActive] = useState('');
+    const [sectionActiveList, setSectionActiveList] = useState(Array.from({ length: 8 }, () => false));
+    const [serviceActiveList, setServiceActiveList] = useState(Array.from({ length: 4 }, () => false));
+
+    /* swiper 관리 */
     const [main, setMain] = useState([]);
     const [appIntro, setAppIntro] = useState([]);
     const [magazine, setMagazine] = useState([]);
-
+    /* active class */
     const [mainTotal, setMainTotal] = useState(0);
     const [mainActive, setMainActive] = useState(0);
     const [mainToggle, setMainToggle] = useState(false);
 
-     // 새로고침
+     // 새로고침 시
      useEffect(() => {
         window.onbeforeunload = function() { // 페이지를 벗어나면서
             window.scrollTo(0, 0);
         };
         document.body.style.overflow = 'hidden'; 
-
         setLoading(false); // 로딩 완료
         return () => {
             window.onbeforeunload = null; // 이벤트 반환
@@ -149,9 +149,7 @@ const Home = (props) => {
         // section class 전체 삭제
         let copy = [...sectionActiveList];
         for(var i = 0; copy.length > i; i++){
-            if (copy[i]) {
-                copy[i] = false;
-            }
+            copy[i] = false;
         }
         // 0번째 section class 추가
         copy[0] = true;
@@ -178,10 +176,11 @@ const Home = (props) => {
         const scrollSpeed = 1000; // 속도
         const innerSectionActiveList = [...sectionActiveList];
 
-        // **** fixSplashFn 이벤트 **** //
+        // **** fixSplashFn show&hide 이벤트 **** //
         const fixSplashFn = (() => {
+            const fixImgarea = document.querySelector('.fix .img_area');
             const fixSplash = document.querySelector('.fix .splash');
-            // active class save
+            // active class check
             let copy = [...innerSectionActiveList];
             let currentIndex;
             for(let i = 0; copy.length > i; i++) { 
@@ -205,7 +204,16 @@ const Home = (props) => {
                 }, 300);
             }
             // 예외
-            if(!(currentIndex === 1 || currentIndex === 2 || currentIndex === 3)) {
+            if(currentIndex === 1 || currentIndex === 2 || currentIndex === 3) {
+                fixImgarea.scrollTo({
+                    top: 0,
+                    left: 0,
+                });
+                fixImgarea.style.overflow = '';
+                if(currentIndex === 2) {
+                    fixImgarea.style.overflow = 'hidden';
+                }
+            } else {
                 fixSplash.style.opacity = '';
                 setTimeout(() => {
                     fixSplash.style.display = '';
@@ -215,7 +223,7 @@ const Home = (props) => {
         fixSplashFn();
 
         /* --------------------------------------------------------------------------------------
-            ***** 순서 1 - fixFn 이벤트: splash 안에서 scroll 또는 keyup 이벤트 발생 *****
+            ***** 순서 1 - fixFn 이벤트: fix splash 내부 스크롤 관련 *****
         -------------------------------------------------------------------------------------- */
         // fullpageFn 이벤트 시간과 맞지 않아서 FixFn 분리하였음
         let isFixed = null; // fixed scroll 이벤트 체크
@@ -223,26 +231,45 @@ const Home = (props) => {
             // isFixed false이면서 이벤트 타겟이 fix 인경우
             if(!isFixed && event.target.closest('.fix')) { 
                 const fixImgarea = document.querySelector('.fix .img_area');
-                /* fixImgarea.scrollTo({
-                    top: 0,
-                    behavior: "smooth"
-                }); */
-
-                let offsetTop = fixImgarea.scrollTop;
-                let offsetBottom = fixImgarea.scrollHeight - fixImgarea.scrollTop;
-
-                if(offsetTop === 0 && directionRef.current === 'up'){
-                    if(!isFixed) { // fixIs true 아니면
+                if(innerSectionActiveList[1]) {
+                    let offsetTop = fixImgarea.scrollTop;
+                    let offsetBottom = fixImgarea.scrollHeight - fixImgarea.scrollTop;
+                    const condition1 = (offsetTop === 0 && directionRef.current === 'up');
+                    const condition2 = (offsetBottom - fixImgarea.clientHeight <= 10 && directionRef.current === 'down');
+                    if(condition1 || condition2){
                         return isFixed = true; // fixIs true로 변경, return 다음 이벤트 실행 X
                     }
-                }
-                if(offsetBottom - fixImgarea.clientHeight <= 10 && directionRef.current === 'down') {
-                    if(!isFixed) { // fixIs true 아니면
-                        return isFixed = true; // fixIs true로 변경, return 다음 이벤트 실행 X
-                    }
+                } else {
+                    return;
                 }
             }
         })
+        
+        const fixFn_delay = _.debounce((event) => {
+            // isFixed false이면서 이벤트 타겟이 fix 인경우
+            if(!isFixed && event.target.closest('.fix')) { 
+                const activeIndex = appIntro.activeIndex;
+                const slides = appIntro.slides;
+                const slideTotal = slides.length - 1;
+                
+                if(innerSectionActiveList[2]) {
+                    if(directionRef.current === 'down') {
+                        if(activeIndex === slideTotal) {
+                            return isFixed = true;
+                        }
+                        appIntro.slideNext(400);
+                    }else if(directionRef.current === 'up') {
+                        if(activeIndex === 0) {
+                            return isFixed = true;
+                        }
+                        appIntro.slidePrev(400);
+                    }
+                } else {
+                    return;
+                }
+            }
+        }, scrollDelay)
+        
 
         /* --------------------------------------------------------------------------------------
             ***** 순서 2 - serviceFn 이벤트: service 안에서 scroll 또는 keyup 이벤트 발생 *****
@@ -280,9 +307,7 @@ const Home = (props) => {
                 
                 // lst_data li에서 전체 on 삭제, 해당 li에만 on class 추가
                 for(let i = 0; copy.length > i; i++) { 
-                    if(copy[i]) {
-                        copy[i] = false;
-                    }
+                    copy[i] = false;
                 }
                 if (currentIndex !== -1) { // -1이 아닌 경우에만
                     copy[currentIndex] = true;
@@ -366,9 +391,7 @@ const Home = (props) => {
 
             // section class 전체 삭제
             for(var i = 0; copy.length > i; i++){
-                if (copy[i]) {
-                    copy[i] = false;
-                }
+                copy[i] = false;
             }
             // n번째 section class 추가
             copy[currentIndex] = true;
@@ -378,7 +401,8 @@ const Home = (props) => {
         
         let isAppIntro = null;
         let isMagazine = null;
-        let temp = null;
+        let appIntroTemp = null;
+        let magazineTemp = null;
         /* mainActive === mainTotal 라는 전제하에 실행 */
         function handleScrollandKeyup(event) {
             // 이벤트 방향 저장
@@ -391,53 +415,54 @@ const Home = (props) => {
             }
             // keyup event
             if(event.type === 'keyup'){
-                if (event.isComposing || event.keyCode === 40) {
+                if (event.key === 'ArrowDown') {
                     directionRef.current = 'down';
                 }
-                if (event.isComposing || event.keyCode === 38) {
+                if (event.key === 'ArrowUp') {
                     directionRef.current = 'up';
                 }
             }
-           
-            /* 여기 수자ㅓㅇ하다말았음 */
+
+            /* temp useRef로 변경 필요 */
             if (innerSectionActiveList[2]) {
                 const beforeIndex = appIntro.previousIndex;
                 const activeIndex = appIntro.activeIndex;
                 const slides = appIntro.slides;
-                const slideTotal = appIntroSlides.length - 1;
+                const slideTotal = slides.length - 1;
                 
                 const condition1 = (beforeIndex === undefined);
-                const condition2 = ((temp === null || temp === 0) && activeIndex === 0 && directionRef.current === 'up');
-                const condition3 = ((temp === null || temp === appIntroTotal) && activeIndex === appIntroTotal && directionRef.current === 'down');
-                console.log(condition1, condition2, condition3)
+                const condition2 = ((appIntroTemp === null || appIntroTemp === 0) && activeIndex === 0 && directionRef.current === 'up');
+                const condition3 = ((appIntroTemp === null || appIntroTemp === slideTotal) && activeIndex === slideTotal && directionRef.current === 'down');
                 // swiper 이동한적이 없으면 전체 슬라이드 이벤트 바로 적용
                 if(condition1 || condition2 || condition3) {
                     isAppIntro = true;
                 }
-                temp = activeIndex;
+                appIntroTemp = activeIndex;
                 if(!isAppIntro) {
                     return;
                 }
             } 
-            /* if (innerSectionActiveList[4]) { 
+            if (innerSectionActiveList[4]) { 
                 const beforeIndex = magazine.previousIndex;
                 const activeIndex = magazine.activeIndex;
-                const magazineSlides = magazine.slides;
-                const magazineTotal = magazineSlides.length - 2;
-                console.log(magazine, 'isMagazine', isMagazine, 'directionRef.current', directionRef.current, 'beforeIndex', beforeIndex, 'activeIndex', activeIndex, 'magazineTotal', magazineTotal)
+                const slides = magazine.slides;
+                const slideTotal = slides.length - 2;
+                
+                const condition1 = (beforeIndex === undefined);
+                const condition2 = ((magazineTemp === null || magazineTemp === 0) && activeIndex === 0 && directionRef.current === 'up');
+                const condition3 = ((magazineTemp === null || magazineTemp === slideTotal) && activeIndex === slideTotal && directionRef.current === 'down');
                 // swiper 이동한적이 없으면 전체 슬라이드 이벤트 바로 적용
-                if(beforeIndex === undefined) {
+                if(condition1 || condition2 || condition3) {
                     isMagazine = true;
                 }
+                magazineTemp = activeIndex;
                 if(!isMagazine) {
-                    if ((activeIndex === 0 && directionRef.current === 'up') || (activeIndex === magazineTotal && directionRef.current === 'down')) {
-                        return isMagazine = true;
-                    }
                     return;
                 }
-            } */
+            }
 
             fixFn(event); // 대기시간 X = fix event
+            fixFn_delay(event);
             serviceFn(event); // 대기시간 O = service 페이지 event
             fullpageFn(event); // 대기시간 O = 전체 페이지 event
         }
@@ -448,9 +473,9 @@ const Home = (props) => {
             // scrollHeight
             const container = document.querySelector('#container');
             let tempAccumulate = 0; // resize의 경우에는 누적값을 reset 후 다시 계산
-            for(var i = 0; pageActive > i; i++){ 
+            /* for(var i = 0; pageActive > i; i++){ 
                 tempAccumulate += document.querySelectorAll('.section')[i].scrollHeight;
-            }
+            } */
             container.style.transform = `translateY(-${tempAccumulate}px)`;
             setAccumulate(tempAccumulate);
         };
@@ -780,7 +805,7 @@ const Home = (props) => {
 
             {/* fix start*/}
             <div className={
-                `fix ${sectionActiveList[2] ? 'second_on' : sectionActiveList[3] ? 'third_on' : sectionActiveList[4] ? 'last_on' : ''}`
+                `fix ${sectionActiveList[1] ? 'first_on' : sectionActiveList[2] ? 'second_on' : sectionActiveList[3] ? 'third_on' : sectionActiveList[4] ? 'last_on' : ''}`
             }>
                 {/* splash */}
                 <div className="splash">

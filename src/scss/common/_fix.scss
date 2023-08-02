@@ -2,6 +2,9 @@
 .fix{
     &.second_on{
         .splash{
+            .splash_hd{
+                width: calc(100% - 32px);
+            }
             .img_area{
                 .second_img{
                     display: block;
@@ -19,6 +22,7 @@
             z-index: -1;
             width: 100%;
             height: 100%;
+            border-radius: 0;
             &::after{
                 display: block;
             }
